@@ -10,3 +10,7 @@ class CodigenLoss(nn.Module):
     def forward(self):
         pass
 
+# add more losses here
+# similarity loss, embedding loss, contrastive loss?
+# Contrastive loss reference: simclr https://github.com/Spijkervet/SimCLR/blob/master/simclr/modules/nt_xent.py
+# embedding similarity loss: https://pytorch.org/docs/stable/generated/torch.nn.CosineSimilarity.html

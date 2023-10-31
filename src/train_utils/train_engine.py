@@ -24,7 +24,7 @@ def pretrain(
     used in train of supervised mode or fine-tune of foundation models.
     """
     # model config
-    classifier_config = args.dataset_config[args.model]
+    classifier_config = args.dataset_config[args.framework]
 
     # Define the optimizer and learning rate scheduler
     optimizer = define_optimizer(args, model.parameters())
