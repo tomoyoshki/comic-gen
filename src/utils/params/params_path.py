@@ -30,7 +30,7 @@ def set_model_weight_folder(args):
             newest_id = weight_id
     
 
-    tag_suffix = "" if args.tag == "" else f"_{args.tag}"
+    tag_suffix = "" if args.tag is None else f"_{args.tag}"
     weight_folder = os.path.join(dataset_model_path, f"exp{newest_id + 1}{tag_suffix}")
     check_paths([weight_folder])
     framework_config = args.dataset_config[args.framework]
