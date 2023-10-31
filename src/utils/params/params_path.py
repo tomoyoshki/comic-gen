@@ -40,9 +40,24 @@ def set_model_weight_folder(args):
     args.train_log_file = os.path.join(weight_folder, f"pretrain_log.txt")
     remove_files([args.train_log_file])
     
+    model_weight = os.path.join(weight_folder, f"model_weights")
+    args.model_weight = model_weight
+    check_paths([args.model_weight])
+    
     logging.basicConfig(
         level=logging.INFO, handlers=[logging.FileHandler(args.train_log_file), logging.StreamHandler()], force=True
     )
 
     logging.info(f"=\t[Model weights path]: {weight_folder}")
-    pass
+    return args
+
+def set_model_weight_file(args):
+    """Automatically select the classifier weight during the testing"""
+    args.framework_weight = os.path.join(
+        args.model_weight,
+        f"{args.framework}_best.pt",
+    )
+
+    logging.info(f"=\t[Classifier weight file]: {os.path.basename(args.classifier_weight)}")
+
+    return args

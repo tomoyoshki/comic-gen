@@ -60,6 +60,9 @@ def set_auto_params(args):
         yaml_data = yaml.safe_load(stream)
 
     args.dataset_config = yaml_data
+    args.workers = 10
 
     # set model path files
     args = set_model_weight_folder(args)
+    
+    return args

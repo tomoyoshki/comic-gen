@@ -29,7 +29,7 @@ def parse_base_params():
     parser.add_argument(
         "-batch_size",
         type=int,
-        default=None,
+        default=64,
         help="Specify the batch size for training.",
     )
     parser.add_argument(
