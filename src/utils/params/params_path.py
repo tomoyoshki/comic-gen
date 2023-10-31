@@ -25,14 +25,13 @@ def set_model_weight_folder(args):
 
     reversed(existing_paths)
     for weight in existing_paths:
-        weight_suffix = weight.split("_", 1)[-1]
         weight_id = int(weight.split("_")[0][3:])
         if weight_id > newest_id:
             newest_id = weight_id
-            newest_weight = os.path.join(dataset_model_path, weight)
     
 
-    weight_folder = os.path.join(dataset_model_path, f"exp{newest_id + 1}")
+    tag_suffix = "" if args.tag == "" else f"_{args.tag}"
+    weight_folder = os.path.join(dataset_model_path, f"exp{newest_id + 1}{tag_suffix}")
     check_paths([weight_folder])
     framework_config = args.dataset_config[args.framework]
     with open(os.path.join(weight_folder, "framework_config.json"), "w") as f:
