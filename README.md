@@ -21,6 +21,5 @@ python3 train.py -h
 **Train**
 
 ```python
-cd src
 python3 train.py
 ```
