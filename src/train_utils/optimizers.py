@@ -2,7 +2,7 @@ from torch import optim as optim
 
 def define_optimizer(args, parameters):
     """Define the optimizer."""
-    optimizer_config = args.dataset_config[args.learn_framework]["pretrain_optimizer"]
+    optimizer_config = args.dataset_config[args.framework]["pretrain_optimizer"]
     optimizer_name = optimizer_config["name"]
     weight_decay = optimizer_config["weight_decay"]
 

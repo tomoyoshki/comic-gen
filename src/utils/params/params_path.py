@@ -49,6 +49,7 @@ def set_model_weight_folder(args):
     )
 
     logging.info(f"=\t[Model weights path]: {weight_folder}")
+    args.weight_folder = weight_folder
     return args
 
 def set_model_weight_file(args):

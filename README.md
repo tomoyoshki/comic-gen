@@ -21,5 +21,5 @@ python3 train.py -h
 **Train**
 
 ```python
-python3 train.py
+python3 train.py -gpu=[GPU] -framework=[FRAMEWORK]
 ```

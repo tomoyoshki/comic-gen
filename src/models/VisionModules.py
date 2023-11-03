@@ -8,7 +8,9 @@ class VisionEncoder(nn.Module):
 
         self.args = args
         self.config = args.dataset_config["VisionEncoder"]
-        raise NotImplementedError("Vision Encoder not implemented yet.")
+        
+        # self.model = VisionTransformer()
 
     def forward(self):        
+        raise NotImplementedError("Vision Encoder forward pass not implemented yet.")
         pass

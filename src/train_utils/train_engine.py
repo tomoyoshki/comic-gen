@@ -41,7 +41,7 @@ def pretrain(
 
     val_epochs = 5
 
-    for epoch in range(classifier_config["lr_scheduler"]["train_epochs"]):
+    for epoch in range(classifier_config["pretrain_lr_scheduler"]["train_epochs"]):
         if epoch > 0:
             logging.info("-" * 40 + f"Epoch {epoch}" + "-" * 40)
 
@@ -53,19 +53,27 @@ def pretrain(
         train_loss_list = []
 
         # regularization configuration
-        for i, (data, labels) in tqdm(enumerate(train_dataloader), total=num_batches):
+        for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
             # forward pass
-            raise NotImplementedError("Forward pass not implemented yet.")
+            # raise NotImplementedError("Forward pass not implemented yet.")
+            continue
+        
+        
+            # if stage == "encoder":
+                # embeddings = model.forward_encoder(data, labels)
+                # gt_embeddings = model(labels[-1])
+            
 
             # back propagation
-            optimizer.zero_grad()
-            loss.backward()
+            # optimizer.zero_grad()
+            # loss.backward()
 
-            optimizer.step()
-            train_loss_list.append(loss.item())
+            # optimizer.step()
+            # train_loss_list.append(loss.item())
 
 
         # validation and logging
+        continue
         if epoch % val_epochs == 0:
             raise NotImplementedError("Validation not implemented yet.")
             # Save the latest model

@@ -52,6 +52,7 @@ def select_device(device="", batch_size=0, newline=True):
 
 def set_auto_params(args):
     
+    args.device = select_device(args.gpu)
     # set any bool args to bool here
     args.verbose = str_to_bool(args.verbose)
     

@@ -5,9 +5,9 @@ class CodigenLoss(nn.Module):
         super(CodigenLoss, self).__init__()
         self.args = args
         self.framework_config = self.args.dataset_config["Codigen"]
-        raise NotImplementedError("Codigen Loss not implemented yet")
 
     def forward(self):
+        raise NotImplementedError("Codigen Loss forward pass not implemented yet")
         pass
 
 # add more losses here

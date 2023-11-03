@@ -37,3 +37,32 @@
 
 
 
+
+
+## 11/2
+
+### Task 1 (Ruipeng + Tim)
+
+1. Find pretrained model weight for vision transformer
+2. Find appropriate model for Language encoder
+3. Find pretrained model weight for language model
+
+### Task 2 (Ruipeng + Tim)
+
+1. Codigen framework implementation
+2. Decide on fusion and sequential network 
+
+
+### Task 3 
+
+1. Baselines (2 - 3)
+
+### Task 4
+
+1. Decoders? 
+2. Metrics between decoded text and ground truth text, (angram? how gpt works?)
+
+### Task 5 (tommy)
+
+1. Pipelines, test, evaluations
+2. Loss implementation (encoder + contrasitve/similarity)

@@ -1,10 +1,16 @@
 data:
-    train_index_file: "none"
-    val_index_file: "none"
-    test_index_file: "none"
+    # remember to modify it to your train index path
+    train_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/sample/index_files/train.txt"
+    val_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/sample/index_files/val.txt"
+    test_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/sample/index_files/test.txt"
 
 Codigen:
-    placehold: 1
+    vision:
+        size: [256, 256]
+    language:
+        token: [256, 256]
+
+
     pretrain_optimizer:
         name: "AdamW"
         start_lr: 0.0001

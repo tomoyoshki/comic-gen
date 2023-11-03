@@ -1,6 +1,7 @@
 import os
 import random
 import shutil
+import torch
 
 VERBOSE = False
 PROCESSED_DIR = "C:/Users/Tomoyoshi/Documents/cs546/processed_data"
@@ -25,6 +26,7 @@ def copy_from_paths(path, target_dir):
             
             if VERBOSE:
                 print(f"Copying {source_image_path} to {target_image_path}")
+            
             shutil.copy(source_image_path, target_image_path)
     
     target_dir_elem = target_dir.split("/")

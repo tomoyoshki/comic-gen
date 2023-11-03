@@ -10,8 +10,8 @@ class LanguageEncoder(nn.Module):
         self.args = args
         self.config = args.dataset_config["LanguageEncoder"]
         
-        raise NotImplementedError("Language Encoder not implemented yet.\n\tPlease implement it in src/models/LanguageModules.py\n\tPlease refer to tokenizer and pretrained language model for reference(e.g. openai)")
+        # raise NotImplementedError("Language Encoder not implemented yet.\n\tPlease implement it in src/models/LanguageModules.py\n\tPlease refer to tokenizer and pretrained language model for reference(e.g. openai)")
 
     def forward(self):        
-        raise NotImplementedError("MoCo Forward pass not implemented yet.")
+        raise NotImplementedError("LanguageEncoder forward pass not implemented yet.")
         pass

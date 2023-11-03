@@ -24,10 +24,14 @@ def train(args):
     train_dataloader = create_dataloader("train", args, batch_size=args.batch_size, workers=args.workers)
     val_dataloader = create_dataloader("val", args, batch_size=args.batch_size, workers=args.workers)
     test_dataloader = create_dataloader("test", args, batch_size=args.batch_size, workers=args.workers)
+    num_batches = len(train_dataloader)
     
     logging.info("= Building model and loss function...")
     model = select_model(args)
     loss_func = select_loss_func(args)
+    
+    logging.info("= Start pretraining...")
+    pretrain(args, model, train_dataloader, val_dataloader, test_dataloader, loss_func, num_batches)
 
 def main_train():
     """The main function of training"""

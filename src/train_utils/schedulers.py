@@ -6,9 +6,9 @@ def define_lr_scheduler(args, optimizer):
     """
     Define the learning rate scheduler
     """
-    classifier_config = args.dataset_config[args.model]
-    optimizer_config = args.dataset_config[args.learn_framework]["pretrain_optimizer"]
-    scheduler_config = args.dataset_config[args.learn_framework]["pretrain_lr_scheduler"]
+    classifier_config = args.dataset_config[args.framework]
+    optimizer_config = args.dataset_config[args.framework]["pretrain_optimizer"]
+    scheduler_config = args.dataset_config[args.framework]["pretrain_lr_scheduler"]
 
     if scheduler_config["name"] == "cosine":
         lr_scheduler = CosineLRScheduler(
