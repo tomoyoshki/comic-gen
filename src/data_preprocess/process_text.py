@@ -20,7 +20,7 @@ def extract_ocr(sample_files, ocr_files):
             panel_id = images[1].split("_")[0]
             comic = OCR[OCR["comic_no"] == int(image_folder)]
             page = comic[comic["page_no"] == int(panel_id)]
-            with open(os.path.join(image_folder_path, "text.txt"), "w") as f:
+            with open(os.path.join(image_folder_path, "text.txt"), "w", encoding="utf-8") as f:
                 for i in range(4):
                     panel = page[page["panel_no"] == i]
                     texts = panel["text"].to_list()
@@ -33,6 +33,6 @@ def extract_ocr(sample_files, ocr_files):
                     f.write("\n")
 
 if __name__ == "__main__":
-    ocrs = "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/COMICS_ocr_file.csv"
-    samples = "./sample/"
+    ocrs = "C:/Users/Tomoyoshi/Documents/cs546/COMICS_ocr_file.csv"
+    samples = "/Users/Tomoyoshi/Documents/cs546/processed_data/sample"
     extract_ocr(samples, ocrs)

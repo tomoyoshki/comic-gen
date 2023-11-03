@@ -2,12 +2,24 @@ import os
 import random
 import shutil
 import torch
+from torchvision import transforms
+
+import cv2
+from transforms.resize_pad import ResizeOrPad
 
 VERBOSE = False
 PROCESSED_DIR = "C:/Users/Tomoyoshi/Documents/cs546/processed_data"
 
+
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    ResizeOrPad((256, 256))
+])
+
 def copy_from_paths(path, target_dir):
 
+    data_t = ResizeOrPad((256, 256))
     for source_image_idx_path in path:
         source_image_idx_path = source_image_idx_path.replace("\n", "")
         image_idx_path = "\\".join(source_image_idx_path.split("\\")[-2:])
@@ -22,12 +34,15 @@ def copy_from_paths(path, target_dir):
 
         for i in range(0, 4):
             source_image_path = f"{source_image_idx_path}_{i}.jpg"
-            target_image_path = f"{target_image_idx_path}_{i}.jpg"
+            target_image_path = f"{target_image_idx_path}_{i}.pt"
             
             if VERBOSE:
                 print(f"Copying {source_image_path} to {target_image_path}")
             
-            shutil.copy(source_image_path, target_image_path)
+            panel = cv2.imread(source_image_path)
+            panel = cv2.cvtColor(panel, cv2.COLOR_BGR2RGB)
+            panel = transform(panel)
+            torch.save(panel, target_image_path)
     
     target_dir_elem = target_dir.split("/")
     index_path = "/".join(target_dir_elem[:-1])

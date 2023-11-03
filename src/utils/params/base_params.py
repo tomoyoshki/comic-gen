@@ -29,9 +29,10 @@ def parse_base_params():
     parser.add_argument(
         "-batch_size",
         type=int,
-        default=64,
+        default=8,
         help="Specify the batch size for training.",
     )
+
     parser.add_argument(
         "-gpu",
         type=str,
