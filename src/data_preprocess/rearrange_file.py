@@ -16,6 +16,7 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     ResizeOrPad((256, 256))
 ])
+
 def copy_from_paths(path, target_dir):
 
     data_t = ResizeOrPad((256, 256))
