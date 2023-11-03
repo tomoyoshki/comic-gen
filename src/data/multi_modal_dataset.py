@@ -1,5 +1,5 @@
 import os
-
+import torch
 import cv2
 import numpy as np
 from torch.utils.data import Dataset
@@ -37,16 +37,15 @@ class MultiModalDataset(Dataset):
 
         panels = []
         for i in range(0, 4):
-            panel_path = f"{image_filepath}_{i}.jpg"
-            panel = cv2.imread(panel_path)
-            panel = cv2.cvtColor(panel, cv2.COLOR_BGR2RGB)      
-            if self.transform is not None:
-                panel = self.transform(panel)
+            panel_path = f"{image_filepath}_{i}.pt"
+            panel = torch.load(panel_path)
             panels.append(panel)
-        
+
+        panels = torch.stack(panels)
+
         text_path = f"{'/'.join(image_filepath.split('/')[:-1])}/text.txt"
         if os.path.exists(text_path):
-            with open(text_path, "r") as f:
+            with open(text_path, "r", encoding="utf-8") as f:
                 text = f.readlines()
         else:
             raise Exception("Text file not found, ensure you have text.txt under each image folder")
