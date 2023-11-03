@@ -8,7 +8,7 @@ from data.multi_modal_dataloader import create_dataloader
 from train_utils.train_engine import eval_model
 from train_utils.selection import select_model, select_loss_func
 from utils.params.params import parse_params
-from utils.weights.load_weight import load_model_weight
+from utils.general.load_weight import load_model_weight
 
 
 
