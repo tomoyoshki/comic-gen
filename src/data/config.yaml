@@ -10,6 +10,8 @@ Codigen:
     language:
         token: [256, 256]
 
+    temperature: 0.07
+
 
     pretrain_optimizer:
         name: "AdamW"
