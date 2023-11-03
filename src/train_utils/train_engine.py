@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from train_utils.optimizers import define_optimizer
 from train_utils.schedulers import define_lr_scheduler
+from train_utils.evaluations import eval_model
 
 def pretrain(
     args,
@@ -73,16 +74,25 @@ def pretrain(
 
 
         # validation and logging
-        continue
         if epoch % val_epochs == 0:
-            raise NotImplementedError("Validation not implemented yet.")
-            # Save the latest model
-            torch.save(classifier.state_dict(), latest_weight)
+            train_loss = np.mean(train_loss_list)
+            val_acc, val_loss = eval_model(
+                args,
+                epoch,
+                model,
+                val_dataloader,
+                test_dataloader,
+                loss_func,
+                train_loss,
+            )
+
+            # Save the latest model, only the backbone parameters are saved
+            torch.save(model.state_dict(), latest_weight)
 
             # Save the best model according to validation result
-            if val_metric > best_val_acc:
-                best_val_acc = val_metric
-                torch.save(classifier.state_dict(), best_weight)
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                torch.save(model.backbone.state_dict(), best_weight)
 
         # Update the learning rate scheduler
         lr_scheduler.step(epoch)
