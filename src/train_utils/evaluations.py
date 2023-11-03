@@ -4,7 +4,7 @@ from tqdm import tqdm
 import numpy as np
 
 def eval_metrics(args, predictions, all_labels):
-    pass
+    return [0, 0, 0]
 
 def eval_pretrained_model(args, model, dataloader, loss_func):
     labels = []
@@ -14,8 +14,7 @@ def eval_pretrained_model(args, model, dataloader, loss_func):
     
     with torch.no_grad():
         for panel, text in tqdm(dataloader, total=len(dataloader)):
-            label = label.argmax(dim=1, keepdim=False) if label.dim() > 1 else label
-            labels.append(label.cpu().numpy())
+            continue
 
             """Eval pretrain loss."""
             predicted_embedding, gt_embedding = model(panel, text)
@@ -25,12 +24,12 @@ def eval_pretrained_model(args, model, dataloader, loss_func):
             all_predicted_embeddings.append(predicted_embedding.cpu().numpy())
             all_gt_embeddings.append(gt_embedding.cpu().numpy())
 
-    all_predictions = np.concatenate(all_predictions, axis=0)
-    all_labels = np.concatenate(all_labels, axis=0)
+    all_predictions = np.concatenate(all_predicted_embeddings, axis=0)
+    all_gt = np.concatenate(all_gt_embeddings, axis=0)
     
     # compute metrics
     mean_loss = np.mean(loss_list)
-    metrics = eval_metrics(args, all_predictions, all_labels)
+    metrics = eval_metrics(args, all_predictions, all_gt)
 
     return mean_loss, metrics
 

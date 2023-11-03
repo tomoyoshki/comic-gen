@@ -133,3 +133,5 @@ weights*
 .vscode/
 scripts/*.csv
 *.sh
+
+*sample

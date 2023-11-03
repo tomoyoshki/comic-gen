@@ -20,7 +20,6 @@ def set_model_weight_folder(args):
     
     # find experiment weight folder under the model folder
     newest_id = -1
-    newest_weight = None
     existing_paths = os.listdir(dataset_model_path)
 
     reversed(existing_paths)

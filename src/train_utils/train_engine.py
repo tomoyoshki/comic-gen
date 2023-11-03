@@ -56,8 +56,7 @@ def pretrain(
         # regularization configuration
         for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
             # forward pass
-            # raise NotImplementedError("Forward pass not implemented yet.")
-            continue
+            raise NotImplementedError("Forward pass not implemented yet.")
         
         
             # if stage == "encoder":

@@ -14,7 +14,7 @@ def create_dataloader(dataloader_option, args, batch_size=64, workers=5):
     batch_size = min(batch_size, len(dataset))
 
     dataloader = DataLoader(
-        dataset, batch_size=batch_size, shuffle=(dataloader_option == "train"), num_workers=workers, collate_fn=collate_fn
+        dataset, batch_size=batch_size, shuffle=False, num_workers=workers, collate_fn=collate_fn, 
     )
 
     return dataloader

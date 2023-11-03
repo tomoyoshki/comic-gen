@@ -45,8 +45,7 @@ class MultiModalDataset(Dataset):
 
         text_path = f"{'/'.join(image_filepath.split('/')[:-1])}/text.txt"
         if os.path.exists(text_path):
-            with open(text_path, "r", encoding="utf-8") as f:
-                text = f.readlines()
+            text = np.genfromtxt(text_path, dtype='str', encoding='utf-8', delimiter="\n")
         else:
             raise Exception("Text file not found, ensure you have text.txt under each image folder")
         
