@@ -15,7 +15,7 @@ def remove_files(path_list):
 def set_model_weight_folder(args):
     # get basic paths
     base_path = f"{os.path.abspath(os.path.join(os.getcwd(), os.pardir))}/weights"
-    dataset_model_path = os.path.join(base_path, f"{args.framework}")
+    dataset_model_path = os.path.join(base_path, f"{args.framework}" if args.framework != "Baseline" else f"{args.framework}_{args.baseline}")
     check_paths([base_path, dataset_model_path])
     
     # find experiment weight folder under the model folder

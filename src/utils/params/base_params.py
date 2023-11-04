@@ -47,6 +47,14 @@ def parse_base_params():
         default="false",
         help="Whether to show detailed logs.",
     )
+    
+    # specify which baseline to run
+    parser.add_argument(
+        "-baseline",
+        type=str,
+        default="None",
+        help="Specify which baseline to run.",
+    )
 
     args = parser.parse_args()
 
