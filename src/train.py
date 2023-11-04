@@ -1,11 +1,12 @@
 import warnings
 warnings.simplefilter("ignore", UserWarning)
-import os
 import sys
 
 import logging
 import torch
 import numpy as np
+
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from data.multi_modal_dataloader import create_dataloader
 from train_utils.train_engine import pretrain
@@ -20,6 +21,8 @@ torch.set_printoptions(threshold=sys.maxsize)
 
 
 def train(args):
+    
+    logging.info("Initialize pretrained tokenizer")
     logging.info("= Loading dataloaders...")
     train_dataloader = create_dataloader("train", args, batch_size=args.batch_size, workers=args.workers)
     val_dataloader = create_dataloader("val", args, batch_size=args.batch_size, workers=args.workers)

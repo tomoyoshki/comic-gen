@@ -135,3 +135,4 @@ scripts/*.csv
 *.sh
 
 *sample
+data/

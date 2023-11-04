@@ -10,7 +10,7 @@ def select_model(args):
     if args.framework == "Codigen":
         model = Codigen(args)
     elif args.framework == "Baseline":
-        # raise Exception(f"Invalid framework provided: {args.framework}")
+        raise Exception(f"Invalid framework provided: {args.framework}")
     
     model = model.to(args.device)
     return model

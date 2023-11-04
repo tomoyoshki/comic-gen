@@ -15,7 +15,7 @@ class MultiModalDataset(Dataset):
         self.transform = transform
         
         
-        self.local_directory = "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/sample/"
+        self.local_directory = "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample"
     
     def __replace_path(self, path):
         path = path[path.find("sample"):]
@@ -35,18 +35,8 @@ class MultiModalDataset(Dataset):
             print(image_filepath)
             raise Exception("Ensure that you change the local directory in this file to your local directory.")
 
-        panels = []
-        for i in range(0, 4):
-            panel_path = f"{image_filepath}_{i}.pt"
-            panel = torch.load(panel_path)
-            panels.append(panel)
-
-        panels = torch.stack(panels)
-
-        text_path = f"{'/'.join(image_filepath.split('/')[:-1])}/text.txt"
-        if os.path.exists(text_path):
-            text = np.genfromtxt(text_path, dtype='str', encoding='utf-8', delimiter="\n")
-        else:
-            raise Exception("Text file not found, ensure you have text.txt under each image folder")
-        
+        image_folder_path = f"{'/'.join(image_filepath.split('/')[:-1])}"
+        panels = torch.load(f"{image_folder_path}/images.pt")
+        text_path = f"{image_folder_path}/text_tokens.pt"
+        text = torch.load(text_path)
         return panels, text
