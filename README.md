@@ -12,26 +12,26 @@
 ### TODO
 
 - [X] Dataset
-- [ ] Dataloader
+- [X] Dataloader
   - [X] Sequential panels
   - [X] Text loader
-  - [ ] Text tokenizer
+  - [X] Text tokenizer
 - [ ] Models
   - [ ] General
     - [ ] Vision Encoder
-    - [ ] Language Encoder
+    - [X] Language Encoder
+    - [X] Decoder
+    - [X] Loss
   - [ ] Codigen
     - [ ] Mutual Sequential modules (Sequential modules of image + language embeddings)
     - [ ] Fusion modules
-    - [ ] Decoder
-    - [X] Loss
   - [ ] Baselines
-    - [ ] Vision only
-    - [ ] Language only
-    - [ ] Non sequential
-    - [ ] Indpendent Sequential modules
-    - [ ] Contrastive baseline
-    - [ ] CLIP baseline
+    - [ ] Vision only (Vision embedding concat)
+    - [X] Language only (Language embedding concat)
+    - [ ] Non sequential (Vision + Language embedding concat)
+    - [ ] Indpendent Sequential modules (Vision sequential or Language sequential)
+    - [ ] Contrastive baseline?
+    - [ ] CLIP baseline?
 - [ ] Evaluations
   - [ ] Encoder evaluation metrics
   - [ ] Decoder evaluation metrics
@@ -63,8 +63,30 @@ cd src
 python3 train.py -h
 ```
 
-**Train**
+### Train Encoder
+
+**Train Codigen**
 
 ```python
-python3 train.py -gpu=[GPU] -framework=[FRAMEWORK]
+python3 train.py -gpu=[GPU] -framework=Codigen
+```
+
+**Train baselines**
+
+```python
+python3 train.py -gpu=[GPU] -framework=Baselines -baseline=[BASELINE TO RUN]
+```
+
+### Train Decoder
+
+**Train Codigen Decoder**
+
+```python
+python3 train.py -gpu=[GPU] -framework=Codigen -stage=decode  -model_weight[PATH TO MODEL ENCODER WEIGHT]
+```
+
+**Train Baselines Decoder**
+
+```python
+python3 train.py -gpu=[GPU] -framework=Baselines -baseline=[BASELINE TO RUN] -stage=decode -model_weight[PATH TO MODEL ENCODER WEIGHT]
 ```
