@@ -33,8 +33,8 @@ class CodigenLoss(nn.Module):
 
         return loss
         
-    def forward(self, predicted, gt, stage):
-        if stage == "encode":
+    def forward(self, predicted, gt):
+        if self.args.stage in {"encode"}:
             return self.forward_similarity(predicted, gt)
         else:
             raise NotImplementedError("Codigen Loss forward pass not implemented for decoder stage yet")

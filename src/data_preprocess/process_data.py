@@ -17,15 +17,19 @@ def extract_ocr(sample_files, ocr_files):
         stage_path = os.path.join(sample_files, stage)
         for image_folder in os.listdir(stage_path):
             image_folder_path = os.path.join(stage_path, image_folder)
-            
             if not os.path.isdir(image_folder_path):
+                print(f"Skipped: {image_folder_path}")
                 continue
 
             images = os.listdir(image_folder_path)
-            panel_id = images[1].split("_")[0]
+            panel_id = images[0].split("_")[0]
+            if panel_id in {"images.pt", "text.txt"}:
+                panel_id = images[1].split("_")[0]
+                if panel_id in {"images.pt", "text.txt"}:
+                    panel_id = images[2].split("_")[0]
+
             comic = OCR[OCR["comic_no"] == int(image_folder)]
             page = comic[comic["page_no"] == int(panel_id)]
-            # with open(os.path.join(image_folder_path, "text.txt"), "w", encoding="utf-8") as f:
             all_texts = []
             all_images = []
             for i in range(4):
@@ -38,10 +42,22 @@ def extract_ocr(sample_files, ocr_files):
                 texts = panel["text"].to_list()
                 texts = [str(text) for text in texts if text is not np.nan]
                 if len(texts) == 0:
-                    all_text = ""
+                    all_text = "None"
                 else:
                     all_text = "; ".join(texts)
                 all_texts.append(all_text)
+            with open(os.path.join(image_folder_path, "text.txt"), "w", encoding="utf-8") as f:
+                print(image_folder_path)
+                for i in range(4):
+                    panel = page[page["panel_no"] == i]
+                    texts = panel["text"].to_list()
+                    texts = [str(text) for text in texts if text is not np.nan]
+                    if len(texts) == 0:
+                        all_text = ";"
+                    else:
+                        all_text = "; ".join(texts)
+                    f.write(all_text)
+                    f.write("\n")
 
             all_images = torch.stack(all_images)
             tokens = tokenizer(all_texts, padding=True, truncation=True, return_tensors="pt")

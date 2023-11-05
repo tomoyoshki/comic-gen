@@ -62,6 +62,9 @@ def set_auto_params(args):
 
     args.dataset_config = yaml_data
     args.workers = 4
+    
+    if args.stage not in {"encode", "decode", "generate"}:
+        raise Exception("Please specify a valid stage: encode, decode, generate")
 
     # set model path files
     if args.mode in {"train"}:

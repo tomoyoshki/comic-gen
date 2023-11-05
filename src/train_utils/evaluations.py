@@ -3,6 +3,8 @@ import torch
 from tqdm import tqdm
 import numpy as np
 
+from utils.input.input_utils import process_text
+
 def eval_metrics(args, predictions, all_labels):
     return [0, 0, 0]
 
@@ -13,16 +15,16 @@ def eval_pretrained_model(args, model, dataloader, loss_func):
     all_predicted_embeddings = []
     
     with torch.no_grad():
-        for panel, text in tqdm(dataloader, total=len(dataloader)):
-            continue
+        for panels, texts in tqdm(dataloader, total=len(dataloader)):
 
             """Eval pretrain loss."""
-            predicted_embedding, gt_embedding = model(panel, text)
-            loss = loss_func(predicted_embedding, gt_embedding)
+            tokens = process_text(args, texts)
+            embeddings, gt_embeddings, decoded_tokens, decoded_texts = model(panels, tokens)
+            loss = loss_func(embeddings, gt_embeddings)
             loss_list.append(loss)
             
-            all_predicted_embeddings.append(predicted_embedding.cpu().numpy())
-            all_gt_embeddings.append(gt_embedding.cpu().numpy())
+            all_predicted_embeddings.append(embeddings.cpu().numpy())
+            all_gt_embeddings.append(gt_embeddings.cpu().numpy())
 
     all_predictions = np.concatenate(all_predicted_embeddings, axis=0)
     all_gt = np.concatenate(all_gt_embeddings, axis=0)

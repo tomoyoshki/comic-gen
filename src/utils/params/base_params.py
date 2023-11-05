@@ -55,6 +55,13 @@ def parse_base_params():
         default="None",
         help="Specify which baseline to run.",
     )
+    
+    parser.add_argument(
+        "-stage",
+        type=str,
+        default="encode",
+        help="Specify which stage to run: encode, decode, generate.",
+    )
 
     args = parser.parse_args()
 

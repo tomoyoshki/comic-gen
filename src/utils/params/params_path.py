@@ -47,7 +47,7 @@ def set_model_weight_folder(args):
         level=logging.INFO, handlers=[logging.FileHandler(args.train_log_file), logging.StreamHandler()], force=True
     )
 
-    logging.info(f"=\t[Model weights path]: {weight_folder}")
+    logging.info(f"=[Model weights path]: {weight_folder}")
     args.weight_folder = weight_folder
     return args
 
