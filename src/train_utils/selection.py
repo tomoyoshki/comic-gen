@@ -10,7 +10,7 @@ from models.BaselineModules import (
 )
 
 from models.loss import (
-    CodigenLoss
+    GeneralLoss
 )
 
 def select_model(args):
@@ -32,10 +32,8 @@ def select_model(args):
 
 def select_loss_func(args):
     """Initialize the loss function according to the config."""
-    if args.framework == "Codigen":
-        loss_func = CodigenLoss(args)
-    elif args.framework == "Baseline":
-        loss_func = CodigenLoss(args)
+    if args.framework in {"Codigen", "Baseline"}:
+        loss_func = GeneralLoss(args)
     else:
         raise Exception(f"Invalid framework provided: {args.framework}")
 

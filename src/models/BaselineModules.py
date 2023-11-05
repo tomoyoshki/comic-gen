@@ -1,6 +1,7 @@
 from abc import abstractmethod
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from models.LanguageModules import LanguageEncoder
 from models.DecoderModules import Decoder
@@ -29,17 +30,19 @@ class BaseModel(nn.Module):
     def forward_encoder(self, panels, texts):
         pass
 
-    def forward_decoder(self, embeddings):
-        return self.decoder(embeddings)
+    def forward_decoder(self, embeddings, gt_token_id=None):
+        token, text = self.decoder(embeddings, gt_token_id)
+        return token, text
     
     def forward(self, panels, text):
-        embeddings, gt_embedding = self.forward_encoder(panels, text)
+        embeddings, gt_embedding, seq_embedding = self.forward_encoder(panels, text)
 
         if self.args.stage in {"encode"}:
             """Encode only """
             return embeddings, gt_embedding, None, None
 
-        return embeddings, gt_embedding, self.forward_decoder(embeddings)
+        decoded_tokens, decoded_texts = self.forward_decoder(seq_embedding, text[:, -1, 0, :])
+        return embeddings, gt_embedding, decoded_tokens, decoded_texts
 
 
 class BaselineLanguageNonSequential(BaseModel):
@@ -58,23 +61,35 @@ class BaselineLanguageNonSequential(BaseModel):
         self.fusion_module = nn.Linear(
             fused_dim, self.args.dataset_config["text_embed_dim"]
         )
+        
+
+    def pool(self, embedding):
+        embedding_transposed = embedding.transpose(1, 2)
+        # Apply max pooling over the sequence length dimension
+        max_pooled = F.max_pool1d(embedding_transposed, kernel_size=embedding_transposed.size(-1))
+        max_pooled = max_pooled.squeeze(-1)
+        return max_pooled
 
     
     def forward_encoder(self, panels, texts):
-        text_embeddings = []
+        text_seq_embeddings = []
+
+        # For each panel_text in the sequence until the second last one
         for i in range(self.dataset_config["seq_len"] - 1):
             text_token_id = texts[:, i, 0, :]
             text_attention_mask = texts[:, i, 1, :]
             text_embedding = self.language_encoder(text_token_id, text_attention_mask)
 
-            text_embeddings.append(text_embedding)
+            text_seq_embeddings.append(text_embedding)
         
-        text_embeddings = torch.concatenate(text_embeddings, dim=-1)
-        text_embeddings = self.fusion_module(text_embeddings)
-        
-        
+        text_seq_embeddings = torch.concatenate(text_seq_embeddings, dim=-1)
+        text_seq_embeddings = self.fusion_module(text_seq_embeddings)
+
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
-        gt_embedding = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
+        gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
+        
+        text_embeddings = self.pool(text_seq_embeddings)
+        gt_embeddings = self.pool(gt_seq_embeddings)
 
-        return text_embeddings, gt_embedding
+        return text_embeddings, gt_embeddings, text_seq_embeddings

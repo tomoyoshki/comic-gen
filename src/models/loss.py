@@ -3,9 +3,9 @@ import torch.nn as nn
 
 from models.loss_utils import mask_correlated_samples
 
-class CodigenLoss(nn.Module):
+class GeneralLoss(nn.Module):
     def __init__(self, args):
-        super(CodigenLoss, self).__init__()
+        super(GeneralLoss, self).__init__()
         self.args = args
         self.framework_config = self.args.dataset_config["Codigen"]
         self.temperature = self.framework_config["temperature"]
@@ -37,8 +37,7 @@ class CodigenLoss(nn.Module):
         if self.args.stage in {"encode"}:
             return self.forward_similarity(predicted, gt)
         else:
-            raise NotImplementedError("Codigen Loss forward pass not implemented for decoder stage yet")
-            return None
+            return self.criterion(predicted.float(), gt.float())
 
 # add more losses here
 # similarity loss, embedding loss, contrastive loss?

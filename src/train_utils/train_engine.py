@@ -5,6 +5,7 @@ import logging
 import torch
 import numpy as np
 from tqdm import tqdm
+from utils.general.load_weight import load_model_weight
 
 from utils.input.input_utils import process_text
 from train_utils.optimizers import define_optimizer
@@ -38,8 +39,14 @@ def pretrain(
     best_val_acc = 0
     best_val_loss = np.inf
 
-    best_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_best.pt")
-    latest_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_latest.pt")
+    best_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_{args.stage}_best.pt")
+    latest_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_{args.stage}_latest.pt")
+    
+    if args.stage in {"decode"}:
+        model = load_model_weight(args, model)
+        for name, param in model.named_parameters():
+            if "decoder" not in name:
+                param.requires_grad = False
 
     val_epochs = 5
 
@@ -60,9 +67,12 @@ def pretrain(
             tokens = process_text(args, texts)
             embeddings, gt_embeddings, decoded_tokens, decoded_texts = model(panels, tokens)
             
-            # decoded tokens need to be compared with actual tokens
-            # actual_token: [b, seq_len]
-            loss = loss_func(embeddings, gt_embeddings)
+            if args.stage in {"encode"}:
+                loss = loss_func(embeddings, gt_embeddings)
+            elif args.stage in {"decode"}:
+                loss = decoded_tokens
+            else:
+                raise Exception("Do not run generate stage in pretrain mode")
             # back propagation
             optimizer.zero_grad()
             loss.backward()

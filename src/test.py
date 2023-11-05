@@ -35,6 +35,5 @@ def main_test():
     args = parse_params(mode="test")
     test(args)
 
-
 if __name__ == "__main__":
     main_test()
