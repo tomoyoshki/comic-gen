@@ -1,5 +1,7 @@
 import warnings
 
+from train_utils.evaluations import eval_pretrained_model
+
 warnings.simplefilter("ignore", UserWarning)
 
 import torch.nn as nn
@@ -23,10 +25,9 @@ def test(args):
     model = load_model_weight(args, model)
     args.model = model
 
-    test_classifier_loss, test_metrics = eval_model(args, model, test_dataloader, loss_func)
+    test_classifier_loss, test_metrics = eval_pretrained_model(args, model, test_dataloader, loss_func)
     print(f"Test classifier loss: {test_classifier_loss: .5f}")
-    print(f"Test acc: {test_metrics[0]: .5f}, test f1: {test_metrics[1]: .5f}")
-    print(f"Test confusion matrix:\n {test_metrics[2]}")
+    print(f"Test metrics: {test_metrics}")
 
     return test_classifier_loss, test_metrics[0], test_metrics[1]
 

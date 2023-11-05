@@ -14,7 +14,7 @@ class MultiModalDataset(Dataset):
         self.transform = transform
         
         
-        self.local_directory = "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample"
+        self.local_directory = "/home/tomoyoshki/comic-gen/data/sample/"
     
     def __replace_path(self, path):
         path = path[path.find("sample"):]

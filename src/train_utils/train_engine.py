@@ -65,6 +65,8 @@ def pretrain(
         for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
             
             tokens = process_text(args, texts)
+            panels = panels.to(args.device)
+            tokens = tokens.to(args.device)
             embeddings, gt_embeddings, decoded_tokens, decoded_texts = model(panels, tokens)
             
             if args.stage in {"encode"}:

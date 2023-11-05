@@ -70,6 +70,6 @@ def set_auto_params(args):
     if args.mode in {"train"}:
         args = set_model_weight_folder(args)
     else:
-        assert args.model_weight is not None, "Please specify model weight path for testing"
+        args.weight_folder = args.model_weight
     
     return args
