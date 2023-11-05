@@ -12,26 +12,26 @@
 ### TODO
 
 - [X] Dataset
-- [ ] Dataloader
+- [X] Dataloader
   - [X] Sequential panels
   - [X] Text loader
-  - [ ] Text tokenizer
+  - [X] Text tokenizer
 - [ ] Models
   - [ ] General
     - [ ] Vision Encoder
-    - [ ] Language Encoder
+    - [X] Language Encoder
+    - [X] Decoder
+    - [X] Loss
   - [ ] Codigen
     - [ ] Mutual Sequential modules (Sequential modules of image + language embeddings)
     - [ ] Fusion modules
-    - [ ] Decoder
-    - [X] Loss
   - [ ] Baselines
-    - [ ] Vision only
-    - [ ] Language only
-    - [ ] Non sequential
-    - [ ] Indpendent Sequential modules
-    - [ ] Contrastive baseline
-    - [ ] CLIP baseline
+    - [ ] Vision only (Vision embedding concat)
+    - [X] Language only (Language embedding concat)
+    - [ ] Non sequential (Vision + Language embedding concat)
+    - [ ] Indpendent Sequential modules (Vision sequential or Language sequential)
+    - [ ] Contrastive baseline?
+    - [ ] CLIP baseline?
 - [ ] Evaluations
   - [ ] Encoder evaluation metrics
   - [ ] Decoder evaluation metrics
