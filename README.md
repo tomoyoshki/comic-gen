@@ -51,17 +51,38 @@ In the world of comics, dialogues play a pivotal role in conveying narrative and
 
 ## Usage
 
-- Enter the source directory
+**Create Conda environment**
+
+```bash
+conda create --name [env_name] python=3.10
+conda activate [env_name]
+```
+
+**Update pip**
+
+```bash
+pip install --upgrade pip
+```
+
+
+**Clone the repo and install packages**
 
 ```
-cd src
+git clone [repo]
+cd comic-gen
+pip install -r requirements.txt
 ```
 
-- Basic arguments
+**Argument list**
 
 ```
 python3 train.py -h
 ```
+
+### Available framework and baselines
+
+- Codigen
+- LanguageNonSequential (baseline)
 
 ### Train Encoder
 
@@ -74,7 +95,7 @@ python3 train.py -gpu=[GPU] -framework=Codigen
 **Train baselines**
 
 ```python
-python3 train.py -gpu=[GPU] -framework=Baselines -baseline=[BASELINE TO RUN]
+python3 train.py -gpu=[GPU] -framework=Baseline -baseline=[BASELINE TO RUN]
 ```
 
 ### Train Decoder
@@ -88,5 +109,6 @@ python3 train.py -gpu=[GPU] -framework=Codigen -stage=decode  -model_weight[PATH
 **Train Baselines Decoder**
 
 ```python
-python3 train.py -gpu=[GPU] -framework=Baselines -baseline=[BASELINE TO RUN] -stage=decode -model_weight[PATH TO MODEL ENCODER WEIGHT]
+python3 train.py -gpu=[GPU] -framework=Baseline -baseline=[BASELINE TO RUN] -stage=decode -model_weight[PATH TO MODEL ENCODER WEIGHT]
 ```
+
