@@ -8,7 +8,7 @@ class VisionEncoder(nn.Module):
         super(VisionEncoder, self).__init__()
 
         self.args = args
-        # self.config = args.dataset_config["VisionEncoder"]
+        self.config = args.dataset_config["VisionEncoder"]
         
         self.image_processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k")
         self.vision_model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
