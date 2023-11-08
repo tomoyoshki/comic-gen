@@ -62,11 +62,14 @@ def set_auto_params(args):
 
     args.dataset_config = yaml_data
     args.workers = 4
+    
+    if args.stage not in {"encode", "decode", "generate"}:
+        raise Exception("Please specify a valid stage: encode, decode, generate")
 
     # set model path files
     if args.mode in {"train"}:
         args = set_model_weight_folder(args)
     else:
-        assert args.model_weight is not None, "Please specify model weight path for testing"
+        args.weight_folder = args.model_weight
     
     return args

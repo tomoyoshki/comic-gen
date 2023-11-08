@@ -1,12 +1,13 @@
 import os
-import sys
 import time
 
 import logging
 import torch
 import numpy as np
 from tqdm import tqdm
+from utils.general.load_weight import load_model_weight
 
+from utils.input.input_utils import process_text
 from train_utils.optimizers import define_optimizer
 from train_utils.schedulers import define_lr_scheduler
 from train_utils.evaluations import eval_model
@@ -36,9 +37,16 @@ def pretrain(
     start = time_sync()
 
     best_val_acc = 0
+    best_val_loss = np.inf
 
-    best_weight = os.path.join(args.weight_folder, f"{args.framework}_best.pt")
-    latest_weight = os.path.join(args.weight_folder, f"{args.framework}_latest.pt")
+    best_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_{args.stage}_best.pt")
+    latest_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_{args.stage}_latest.pt")
+    
+    if args.stage in {"decode"}:
+        model = load_model_weight(args, model)
+        for name, param in model.named_parameters():
+            if "decoder" not in name:
+                param.requires_grad = False
 
     val_epochs = 5
 
@@ -55,21 +63,24 @@ def pretrain(
 
         # regularization configuration
         for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
-            # forward pass
-            raise NotImplementedError("Forward pass not implemented yet.")
-        
-        
-            # if stage == "encoder":
-                # embeddings = model.forward_encoder(data, labels)
-                # gt_embeddings = model(labels[-1])
             
-
+            tokens = process_text(args, texts)
+            panels = panels.to(args.device)
+            tokens = tokens.to(args.device)
+            embeddings, gt_embeddings, decoded_tokens, decoded_texts = model(panels, tokens)
+            
+            if args.stage in {"encode"}:
+                loss = loss_func(embeddings, gt_embeddings)
+            elif args.stage in {"decode"}:
+                loss = decoded_tokens
+            else:
+                raise Exception("Do not run generate stage in pretrain mode")
             # back propagation
-            # optimizer.zero_grad()
-            # loss.backward()
+            optimizer.zero_grad()
+            loss.backward()
 
-            # optimizer.step()
-            # train_loss_list.append(loss.item())
+            optimizer.step()
+            train_loss_list.append(loss.item())
 
 
         # validation and logging
@@ -91,7 +102,7 @@ def pretrain(
             # Save the best model according to validation result
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
-                torch.save(model.backbone.state_dict(), best_weight)
+                torch.save(model.state_dict(), best_weight)
 
         # Update the learning rate scheduler
         lr_scheduler.step(epoch)

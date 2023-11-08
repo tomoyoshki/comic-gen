@@ -1,8 +1,12 @@
 data:
     # remember to modify it to your train index path
-    train_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample/index_files/train.txt"
-    val_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample/index_files/val.txt"
-    test_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample/index_files/test.txt"
+    train_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/train.txt"
+    val_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/val.txt"
+    test_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/test.txt"
+
+seq_len: 4
+max_seq_len: 100
+text_embed_dim: 768 # do not change, this is the same as the pretrained GPT2 model
 
 Codigen:
     vision:
@@ -48,4 +52,10 @@ Baseline:
         decay_rate: 0.2
 
 VisionEncoder:
+    pass: 1
+
+LanguageEncoder:
+    pass: 1
+
+LanguageDecoder:
     pass: 1

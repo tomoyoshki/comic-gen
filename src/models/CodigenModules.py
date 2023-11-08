@@ -54,7 +54,6 @@ class Codigen(nn.Module):
         return token, text
     
     def forward(self, panels=None, text=None, embeddings=None):
-        # raise NotImplementedError("Forward pass not implemented yet.")
         if embeddings is None:
             return self.forward_encoder(panels, text)
         else:

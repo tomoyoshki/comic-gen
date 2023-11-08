@@ -12,26 +12,26 @@
 ### TODO
 
 - [X] Dataset
-- [ ] Dataloader
+- [X] Dataloader
   - [X] Sequential panels
   - [X] Text loader
-  - [ ] Text tokenizer
+  - [X] Text tokenizer
 - [ ] Models
   - [ ] General
     - [ ] Vision Encoder
-    - [ ] Language Encoder
+    - [X] Language Encoder
+    - [X] Decoder
+    - [X] Loss
   - [ ] Codigen
     - [ ] Mutual Sequential modules (Sequential modules of image + language embeddings)
     - [ ] Fusion modules
-    - [ ] Decoder
-    - [X] Loss
   - [ ] Baselines
-    - [ ] Vision only
-    - [ ] Language only
-    - [ ] Non sequential
-    - [ ] Indpendent Sequential modules
-    - [ ] Contrastive baseline
-    - [ ] CLIP baseline
+    - [ ] Vision only (Vision embedding concat)
+    - [X] Language only (Language embedding concat)
+    - [ ] Non sequential (Vision + Language embedding concat)
+    - [ ] Indpendent Sequential modules (Vision sequential or Language sequential)
+    - [ ] Contrastive baseline?
+    - [ ] CLIP baseline?
 - [ ] Evaluations
   - [ ] Encoder evaluation metrics
   - [ ] Decoder evaluation metrics
@@ -51,20 +51,64 @@ In the world of comics, dialogues play a pivotal role in conveying narrative and
 
 ## Usage
 
-- Enter the source directory
+**Create Conda environment**
+
+```bash
+conda create --name [env_name] python=3.10
+conda activate [env_name]
+```
+
+**Update pip**
+
+```bash
+pip install --upgrade pip
+```
+
+
+**Clone the repo and install packages**
 
 ```
-cd src
+git clone [repo]
+cd comic-gen
+pip install -r requirements.txt
 ```
 
-- Basic arguments
+**Argument list**
 
 ```
 python3 train.py -h
 ```
 
-**Train**
+### Available framework and baselines
+
+- Codigen
+- LanguageNonSequential (baseline)
+
+### Train Encoder
+
+**Train Codigen**
 
 ```python
-python3 train.py -gpu=[GPU] -framework=[FRAMEWORK]
+python3 train.py -gpu=[GPU] -framework=Codigen
 ```
+
+**Train baselines**
+
+```python
+python3 train.py -gpu=[GPU] -framework=Baseline -baseline=[BASELINE TO RUN]
+```
+
+### Train Decoder
+
+**Train Codigen Decoder**
+
+```python
+python3 train.py -gpu=[GPU] -framework=Codigen -stage=decode  -model_weight[PATH TO MODEL ENCODER WEIGHT]
+```
+
+**Train Baselines Decoder**
+
+```python
+python3 train.py -gpu=[GPU] -framework=Baseline -baseline=[BASELINE TO RUN] -stage=decode -model_weight[PATH TO MODEL ENCODER WEIGHT]
+```
+

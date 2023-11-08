@@ -21,8 +21,7 @@ torch.set_printoptions(threshold=sys.maxsize)
 
 
 def train(args):
-    
-    logging.info("Initialize pretrained tokenizer")
+
     logging.info("= Loading dataloaders...")
     train_dataloader = create_dataloader("train", args, batch_size=args.batch_size, workers=args.workers)
     val_dataloader = create_dataloader("val", args, batch_size=args.batch_size, workers=args.workers)
