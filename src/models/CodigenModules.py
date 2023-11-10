@@ -34,6 +34,9 @@ class Codigen(nn.Module):
         panel_embeddings = self.vis_encoder(panels) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768
         text_embeddings = self.lan_encoder(texts) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768 ?
         
+        print(panel_embeddings.shape)
+        print(text_embeddings.shape)
+        
         concat_embedding = torch.cat((panel_embeddings, text_embeddings), dim=2) # output: [batch_size, seq_len, embedding_dim * 2]
         
         # sequential network

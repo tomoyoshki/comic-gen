@@ -10,7 +10,7 @@ class VisionEncoder(nn.Module):
         self.args = args
         self.config = args.dataset_config["VisionEncoder"]
         
-        self.image_processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k")
+        self.image_processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224-in21k", do_rescale=False)
         self.vision_model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k")
 
     def forward(self, panels):
@@ -20,7 +20,7 @@ class VisionEncoder(nn.Module):
         merged_batch = panels.view(-1, 3, 256, 256)
         
         inputs = self.image_processor(merged_batch, return_tensors="pt")
-        outputs = self.vision_model(**inputs)
+        outputs = self.vision_model(**inputs.to("cuda"))
         
         embeddings = outputs.last_hidden_state
         cls_embeddings = embeddings[:, 0, :]
