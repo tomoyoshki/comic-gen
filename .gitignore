@@ -136,3 +136,5 @@ scripts/*.csv
 
 *sample
 data/
+
+processed_data/

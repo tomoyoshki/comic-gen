@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.VisionModules import VisualEncoder
+from models.VisionModules import VisionEncoder
 from models.LanguageModules import LanguageEncoder
 
 class Codigen(nn.Module):
@@ -14,7 +14,7 @@ class Codigen(nn.Module):
         
         self.place_holder = nn.Linear(1, 1)
         
-        self.vis_encoder = VisualEncoder(args)
+        self.vis_encoder = VisionEncoder(args)
         self.lan_encoder = LanguageEncoder(args)
         
         self.sequential_network = nn.RNN(input_size=1536, hidden_size=768, num_layers=1, batch_first=True)

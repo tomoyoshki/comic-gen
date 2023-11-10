@@ -1,8 +1,8 @@
 data:
     # remember to modify it to your train index path
-    train_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample/index_files/train.txt"
-    val_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample/index_files/val.txt"
-    test_index_file: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample/index_files/test.txt"
+    train_index_file: "/home/tw17/comic-gen/processed_data/sample/index_files/train.txt"
+    val_index_file: "/home/tw17/comic-gen/processed_data/sample/index_files/val.txt"
+    test_index_file: "/home/tw17/comic-gen/processed_data/sample/index_files/test.txt"
 
 Codigen:
     vision:
@@ -48,4 +48,7 @@ Baseline:
         decay_rate: 0.2
 
 VisionEncoder:
+    pass: 1
+
+LanguageEncoder:
     pass: 1
