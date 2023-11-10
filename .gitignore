@@ -138,3 +138,5 @@ scripts/*.csv
 data/
 
 processed_data/
+
+*DS_Store

@@ -1,6 +1,5 @@
 import os
 import torch
-import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
@@ -37,9 +36,6 @@ class MultiModalDataset(Dataset):
 
         image_folder_path = f"{'/'.join(image_filepath.split('/')[:-1])}"
         panels = torch.load(f"{image_folder_path}/images.pt")
-        # text_path = f"{image_folder_path}/text_tokens.pt"
-        # text = torch.load(text_path)
-        text_path = f"{image_folder_path}/text.txt"
-        text = np.genfromtxt(text_path, dtype='U120', encoding='utf-8', delimiter="\n")
-        print(text)
+        text_path = f"{image_folder_path}/text_tokens.pt"
+        text = torch.load(text_path)
         return panels, text
