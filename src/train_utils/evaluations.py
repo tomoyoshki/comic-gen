@@ -1,12 +1,30 @@
 import logging
 import torch
+import torch.nn as nn
+
 from tqdm import tqdm
 import numpy as np
+
 
 from utils.input.input_utils import process_text
 
 def eval_metrics(args, predictions, all_labels):
-    return [0, 0, 0]
+
+    if args.stage in {"encode"}:
+        mse_loss = nn.MSELoss()
+    
+        # predictions: predcited embeddings
+        # all labels: gt embeddings
+    
+        # eval cosine similarity 
+        cos_sim = None
+    
+        # eval mse: nn.
+        mse = None
+        
+        return cos_sim, mse
+    else:
+        pass
 
 def eval_pretrained_model(args, model, dataloader, loss_func):
     labels = []
@@ -57,13 +75,17 @@ def eval_model(args, epoch, model, val_dataloader, test_dataloader, loss_func, t
         logging.info(f"Training {args.stage} loss: {train_loss: .5f} \n")
 
 
+    # loss is general loss same as the pretrain, see GeneralLoss in loss.py
+    # metrics is calculated in eval_metrics, in encoding stage it is [cos_sim, mse], decoding state yet implemented
     val_loss, val_metrics = eval_pretrained_model(args, model, val_dataloader, loss_func)
     test_loss, test_metrics = eval_pretrained_model(args, model, test_dataloader, loss_func)
 
 
     if args.stage in {"encode"}:    
         logging.info(f"Val loss: {val_loss: .5f}")
+        #TODO: Add metrics here
         logging.info(f"Test loss: {test_loss: .5f}")
+
     elif args.stage in {"decode"}:
         logging.info(f"Val loss: {val_loss: .5f}")
         logging.info(f"Val decoding metric1: {val_metrics[0]: .5f}, Val decoding metric2: {val_metrics[1]: .5f}")
