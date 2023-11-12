@@ -18,28 +18,26 @@
   - [X] Text tokenizer
 - [ ] Models
   - [ ] General
-    - [ ] Vision Encoder
+    - [X] Vision Encoder
     - [X] Language Encoder
     - [X] Decoder
     - [X] Loss
-  - [ ] Codigen
-    - [ ] Mutual Sequential modules (Sequential modules of image + language embeddings)
-    - [ ] Fusion modules
+  - [X] Codigen
+    - [X] Mutual Sequential modules (Sequential modules of image + language embeddings)
+    - [X] Fusion modules
   - [ ] Baselines
-    - [ ] Vision only (Vision embedding concat)
+    - [X] Vision only (Vision embedding concat)
     - [X] Language only (Language embedding concat)
-    - [ ] Non sequential (Vision + Language embedding concat)
+    - [X] Non sequential (Vision + Language embedding concat)
     - [ ] Indpendent Sequential modules (Vision sequential or Language sequential)
-    - [ ] Contrastive baseline?
-    - [ ] CLIP baseline?
 - [ ] Evaluations
-  - [ ] Encoder evaluation metrics
+  - [X] Encoder evaluation metrics
   - [ ] Decoder evaluation metrics
 - [ ] Write up
   - [ ] Abstract
-  - [ ] Introduction
-  - [ ] Related Works
-  - [ ] Methodology
+  - [X] Introduction
+  - [X] Related Works
+  - [X] Methodology
   - [ ] Evaluation
   - [ ] Discussion
   - [ ] Future plans
