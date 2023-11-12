@@ -9,20 +9,13 @@ import numpy as np
 from utils.input.input_utils import process_text
 
 def eval_metrics(args, predictions, all_labels):
-
+    mse_loss = nn.MSELoss(reduction="mean")
+    sim_loss = nn.CosineEmbeddingLoss(reduction="mean")
     if args.stage in {"encode"}:
-        mse_loss = nn.MSELoss()
-    
-        # predictions: predcited embeddings
-        # all labels: gt embeddings
-    
-        # eval cosine similarity 
-        cos_sim = None
-    
-        # eval mse: nn.
-        mse = None
-        
-        return cos_sim, mse
+        target = torch.ones(all_labels.shape[0], device=args.device)
+        cos_sim = sim_loss(predictions, all_labels, target)
+        mse = mse_loss(predictions, all_labels)
+        return (cos_sim, mse)
     else:
         pass
 
@@ -54,14 +47,14 @@ def eval_pretrained_model(args, model, dataloader, loss_func):
 
             loss_list.append(loss.item())
             
-            all_predicted_embeddings.append(embeddings.cpu().numpy())
-            all_gt_embeddings.append(gt_embeddings.cpu().numpy())
+            all_predicted_embeddings.append(embeddings)
+            all_gt_embeddings.append(gt_embeddings)
             if args.stage in {"generate"}:
                 all_gt_texts.append(texts[:, -1])
                 all_decoded_texts.append(decoded_texts)
 
-    all_predictions = np.concatenate(all_predicted_embeddings, axis=0)
-    all_gt = np.concatenate(all_gt_embeddings, axis=0)
+    all_predictions = torch.concatenate(all_predicted_embeddings, axis=0)
+    all_gt = torch.concatenate(all_gt_embeddings, axis=0)
         
     # compute metrics
     mean_loss = np.mean(loss_list)
@@ -83,8 +76,12 @@ def eval_model(args, epoch, model, val_dataloader, test_dataloader, loss_func, t
 
     if args.stage in {"encode"}:    
         logging.info(f"Val loss: {val_loss: .5f}")
-        #TODO: Add metrics here
+        
+        # print("val metrics", type(val_metrics[0]), type(val_metrics[1]))
+        # print(val_metrics[0].shape, val_metrics[1].shape)
+        logging.info(f"Val cosine similarity: {val_metrics[0]: .5f}, Val MSE: {val_metrics[1]: .5f}")
         logging.info(f"Test loss: {test_loss: .5f}")
+        logging.info(f"Test cosine similarity: {test_metrics[0]: .5f}, Test MSE: {test_metrics[1]: .5f}")
 
     elif args.stage in {"decode"}:
         logging.info(f"Val loss: {val_loss: .5f}")
