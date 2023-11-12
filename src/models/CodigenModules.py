@@ -1,7 +1,11 @@
+import torch
 import torch.nn as nn
 
+from models.VisionModules import VisionEncoder
+from models.LanguageModules import LanguageEncoder
 
 class Codigen(nn.Module):
+    
     def __init__(self, args):
         super(Codigen, self).__init__()
 
@@ -10,28 +14,36 @@ class Codigen(nn.Module):
         
         self.place_holder = nn.Linear(1, 1)
         
-        self.encoder = {
-            "images": None,
-            "texts": None,
-        }
-    
+        self.vis_encoder = VisionEncoder(args)
+        self.lan_encoder = LanguageEncoder(args)
         
-        self.sequential_network = None
+        self.sequential_network = nn.RNN(input_size=1536, hidden_size=768, num_layers=1, batch_first=True)
+        
+        self.fuse_network = nn.Sequential(
+            nn.Linear(768, 4000),
+            nn.ReLU(),
+            nn.Linear(4000, 1000),
+            nn.ReLU(),
+            nn.Linear(1000, 768),
+        )
 
-        self.decoder = None
+        self.decoder = None # GPT?
 
     def forward_encoder(self, panels, texts):
-        
         # encoder
-        sequential_embedding = None
-        for i in range(0, 3):
-            panel_embedding = self.encoder["image"](panels[i])
-            text_embedding = self.encoder["texts"](texts[i])
-
-            sequential_embedding = self.sequential_network[i](panel_embedding, text_embedding, sequential_embedding)
+        panel_embeddings = self.vis_encoder(panels) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768
+        text_embeddings = self.lan_encoder(texts) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768 ?
         
-        panel_embedding = self.encoder["image"](panels[-1])
-        fused_embeddings = self.sequential_network[-1](panel_embedding, sequential_embedding)
+        print(panel_embeddings.shape)
+        print(text_embeddings.shape)
+        
+        concat_embedding = torch.cat((panel_embeddings, text_embeddings), dim=2) # output: [batch_size, seq_len, embedding_dim * 2]
+        
+        # sequential network
+        sequential_embedding, _ = self.sequential_network(concat_embedding)
+        
+        # fuse network
+        fused_embeddings = self.fuse_network(sequential_embedding)
         
         return fused_embeddings
 
