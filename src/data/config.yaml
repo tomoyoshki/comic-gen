@@ -1,8 +1,8 @@
 data:
     # remember to modify it to your train index path
-    train_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/train.txt"
-    val_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/val.txt"
-    test_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/test.txt"
+    train_index_file: "/Users/weiyangwang/546_final/sample/index_files/train.txt"
+    val_index_file: "/Users/weiyangwang/546_final/sample/index_files/val.txt"
+    test_index_file: "/Users/weiyangwang/546_final/sample/index_files/test.txt"
 
 seq_len: 4
 max_seq_len: 100
@@ -46,7 +46,7 @@ Baseline:
         name: "cosine"
         warmup_prefix: True
         warmup_epochs: 0
-        train_epochs: 2500
+        train_epochs: 20
         start_epoch: 0
         decay_epochs: 500
         decay_rate: 0.2

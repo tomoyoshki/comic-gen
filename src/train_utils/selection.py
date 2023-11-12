@@ -6,7 +6,8 @@ from models.CodigenModules import (
 )
 
 from models.BaselineModules import (
-    BaselineLanguageNonSequential
+    BaselineLanguageNonSequential,
+    BaselineVisionNonSequential
 )
 
 from models.loss import (
@@ -24,6 +25,9 @@ def select_model(args):
     elif args.framework == "Baseline":
         if args.baseline == "LanguageNonSequential":
             model = BaselineLanguageNonSequential(args, tokenizer)
+        if args.baseline == "VisionNonSequential":
+            model = BaselineVisionNonSequential(args, tokenizer)
+        
         else:
             raise Exception(f"Invalid baseline framework provided: {args.baseline}")
     
