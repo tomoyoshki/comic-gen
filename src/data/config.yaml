@@ -1,5 +1,5 @@
 
-data_path: "/home/tomoyoshki/comic-gen/data/sample"
+data_path: "/Users/weiyangwang/546_final/sample"
 data:
     # remember to modify it to your train index path
     train_index_file: "index_files/train.txt"
