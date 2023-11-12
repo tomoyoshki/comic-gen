@@ -10,7 +10,7 @@ class Codigen(nn.Module):
     def __init__(self, args):
         super(Codigen, self).__init__()
         self.args = args
-        self.config = args.dataset_config["Codigen"]
+        self.config = args.dataset_config
         
         self.place_holder = nn.Linear(1, 1)
         
@@ -61,18 +61,30 @@ class Codigen(nn.Module):
         # encoder
         panel_embeddings = self.vis_encoder(panels) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768
         
-        text_token_id = texts[:, :, 0, :]
-        text_attention_mask = texts[:, :, 1, :]
-        text_embeddings = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, seq_len, token_len, embedding_dim] 
+        text_seq_embeddings = []
+        # For each panel_text in the sequence until the second last one
+        for i in range(self.config["seq_len"] - 1):
+            text_token_id = texts[:, i, 0, :]
+            text_attention_mask = texts[:, i, 1, :]
+            text_embedding = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, 1, tolen_len, embeedings]
+            text_seq_embeddings.append(text_embedding)
+
+        text_seq_embeddings =  torch.stack(text_seq_embeddings, dim=1) # [batch_size, seq_len - 1, token_len, embedding_dim] 
+
+        # text_token_id = texts[:, :, 0, :]
+        # text_attention_mask = texts[:, :, 1, :]
+        # text_embeddings = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, seq_len, token_len, embedding_dim] 
 
         # Pool on the token_len dim
-        text_embeddings = self.pool(text_embeddings) # [b, seq_len, emb_dim]
+        text_embeddings = self.pool(text_seq_embeddings) # [b, seq_len - 1, emb_dim]
         # concat panel embeddings and text embeddings
-        concat_embedding = torch.cat((panel_embeddings, text_embeddings), dim=2) # output: [batch_size, seq_len, embedding_dim * 2]
+        concat_embedding = torch.cat((panel_embeddings[:, :-1, :], text_embeddings), dim=2) # output: [batch_size, seq_len - 1, embedding_dim * 2]
         
-        # sequential network -> [b, seq_len, emb_dim]
+        # sequential network -> [b, seq_len - 1, emb_dim]
         sequential_embedding, _ = self.sequential_network(concat_embedding)
         
+        # sequential_embedding -> [b, seq_len, emb_dim]
+        sequential_embedding = torch.concat([sequential_embedding, panel_embeddings[:, -1, :].unsqueeze(1)], dim=1)
 
         # What we want: [b, seq_len, embed_dim] -> [b, embed_dim]
         sequential_embedding = torch.mean(sequential_embedding, dim=1)
