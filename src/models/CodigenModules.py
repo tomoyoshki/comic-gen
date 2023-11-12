@@ -32,7 +32,6 @@ class Codigen(nn.Module):
 
     # THIS IS DIRECTLY COPIED FROM BaselineModules.py
     def __init__encoder(self):
-        self.language_encoder = LanguageEncoder(self.args)
         self.ground_truth_encoder = LanguageEncoder(self.args)
         for param in self.ground_truth_encoder.parameters():
             param.requires_grad = False  # not update by gradient
@@ -44,7 +43,7 @@ class Codigen(nn.Module):
 
     def forward_encoder(self, panels, texts):
         """
-        Vision: [b, seq_len, 3, 256, 256] input
+        Vision input: [b, seq_len, 3, 256, 256] 
         Vision output: [b, seq_len, embedding dimension]
 
         Text: [b, seq_len, 2 (text token ids, masks[mask no need, need to pass in separately], token length, token dim)
@@ -61,48 +60,41 @@ class Codigen(nn.Module):
         """
         # encoder
         panel_embeddings = self.vis_encoder(panels) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768
-        text_embeddings = self.lan_encoder(texts) # output: [batch_size, seq_len, embedding_dim] embedding_dim = 768 ?
         
-    
-        # Process embeddings
-        text_embeddings = text_embeddings.mean(dim=2)  # output: [batch_size, seq_len, 100, embedding_dim]
-        # Aggregate the token dimension, using max pooling across the token dimension (100)
-        text_embeddings = text_embeddings.max(dim=2)[0]  # output: [batch_size, seq_len, embedding_dim]
+        text_token_id = texts[:, :, 0, :]
+        text_attention_mask = texts[:, :, 1, :]
+        text_embeddings = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, seq_len, token_len, embedding_dim] 
 
+        # Pool on the token_len dim
+        text_embeddings = self.pool(text_embeddings) # [b, seq_len, emb_dim]
         # concat panel embeddings and text embeddings
         concat_embedding = torch.cat((panel_embeddings, text_embeddings), dim=2) # output: [batch_size, seq_len, embedding_dim * 2]
         
-        # sequential network
+        # sequential network -> [b, seq_len, emb_dim]
         sequential_embedding, _ = self.sequential_network(concat_embedding)
         
-        # fuse network
+
         # What we want: [b, seq_len, embed_dim] -> [b, embed_dim]
-
-        # Option 1.
-        # torch.mean(sequential_emb, dim=1) -> [b, seq_len, embed_dim], then self.fuse_network(sequential_embedding)
-
-        # 2. 
-        # [b, seq_len, embed_dim] -> [b, seq_len * embed_dim] -> ........ -> [b, embed_dim]
-        # change MLP din to embed_dim * seq_len
-        # torch.concatnate(sequential_emb, dim=1) [b, seq_len * embed_dim] -> MLP -> [b, embed_dim]
+        sequential_embedding = torch.mean(sequential_embedding, dim=1)
 
         # [b, seq_len, embed_dim] -> [b, seq_len, 4000] -> [b, seq_len, embed_dim]
         fused_embeddings = self.fuse_network(sequential_embedding)
-        # fused_embeddings = self.pool(fused_embeddings) pool is only for token length for now
-        
+
         # Ground Truth Embeddings
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
         gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
-        gt_embeddings = self.pool(gt_seq_embeddings)
+        gt_embeddings = self.gt_pool(gt_seq_embeddings)
 
         return fused_embeddings, gt_embeddings
+
 
     # TODO: TO BE IMPLEMENTED
     def forward_decoder(self, embeddings):
         decoded_text = self.decoder(embeddings)
         return decoded_text
     
+
     def forward(self, panels=None, text=None, embeddings=None):
         if embeddings is None:
             """Encode only """
@@ -111,34 +103,31 @@ class Codigen(nn.Module):
         else:
             return self.forward_decoder(embeddings)
 
+
     def pool(self, embedding):
         """Pool over token length
-        baseline pool input: 
-
-        
         Codigen Pool Input: [b, seq_len, token_len, embedding]
         Output: [b, seq_len, embedding]
         """
+        # Reshape and transpose: [batch_size * seq_len, embedding_dim, token_len]
+        b, seq_len, token_len, embedding_dim = embedding.size()
+        embedding_reshaped = embedding.reshape(b * seq_len, embedding_dim, token_len)
 
-        # TODO: Double check pooling dimension
-        embedding_transposed = embedding.transpose(-1, -2) # [b, token_len, seq_len, embedding]
         # Apply max pooling over the token length dimension
-        max_pooled = F.max_pool1d(embedding_transposed, kernel_size=embedding_transposed.size(-1)) # 
-        max_pooled = max_pooled.squeeze(-1)
+        max_pooled = F.max_pool1d(embedding_reshaped, kernel_size=token_len)
+
+        # Reshape back to [batch_size, seq_len, embedding_dim]
+        max_pooled = max_pooled.reshape(b, seq_len, embedding_dim)
+
         return max_pooled
 
-    # def pool(self, embedding):
-    #     # If embedding is more than 3D, flatten the additional dimensions
-    #     if embedding.dim() > 3:
-    #         embedding = embedding.view(embedding.size(0), embedding.size(1), -1)
 
-    #     # Transpose to put seq_len as the last dimension
-    #     embedding_transposed = embedding.transpose(1, 2)
-
-    #     # Apply max pooling over the sequence length dimension
-    #     max_pooled = F.max_pool1d(embedding_transposed, kernel_size=embedding_transposed.size(-1))
-
-    #     # Squeeze the last dimension
-    #     max_pooled = max_pooled.squeeze(-1)
-
-    #     return max_pooled
+    def gt_pool(self, embedding):
+        """Pool over seq len
+        Output: [b, seq_len, embedding]
+        """
+        embedding_transposed = embedding.transpose(1, 2) # [b, embedding, seq_len]
+        # Apply max pooling over the token length dimension
+        max_pooled = F.max_pool1d(embedding_transposed, kernel_size=embedding_transposed.size(-1))
+        max_pooled = max_pooled.squeeze(-1)
+        return max_pooled
