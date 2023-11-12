@@ -110,12 +110,14 @@ class Codigen(nn.Module):
         Output: [b, seq_len, embedding]
         """
         # Reshape and transpose: [batch_size * seq_len, embedding_dim, token_len]
-        b, seq_len, token_len, embedding_dim = embedding.size()
-        embedding_reshaped = embedding.reshape(b * seq_len, embedding_dim, token_len)
+        b, seq_len, token_len, embedding_dim = embedding.shape
+        embedding_reshaped = torch.permute(embedding, (0, 1, 3, 2))
+        embedding_reshaped = embedding_reshaped.reshape(b * seq_len, embedding_dim, token_len)
+        # embedding_reshaped = embedding.reshape(b * seq_len, embedding_dim, token_len)
 
         # Apply max pooling over the token length dimension
         max_pooled = F.max_pool1d(embedding_reshaped, kernel_size=token_len)
-
+        max_pooled = max_pooled.squeeze(-1)
         # Reshape back to [batch_size, seq_len, embedding_dim]
         max_pooled = max_pooled.reshape(b, seq_len, embedding_dim)
 

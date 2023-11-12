@@ -5,7 +5,7 @@ data:
     test_index_file: "/home/tomoyoshki/comic-gen/data/sample/index_files/test.txt"
 
 seq_len: 4
-max_seq_len: 100
+max_seq_len: 20
 text_embed_dim: 768
 
 Codigen:
