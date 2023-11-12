@@ -20,7 +20,9 @@
   - [ ] General
     - [X] Vision Encoder
     - [X] Language Encoder
-    - [X] Decoder
+    - [ ] Decoder
+      - [X] General Decoder structure
+      - [ ] Fix Vision to Language Decoder pipeline 
     - [X] Loss
   - [X] Codigen
     - [X] Mutual Sequential modules (Sequential modules of image + language embeddings)
