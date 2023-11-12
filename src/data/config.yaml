@@ -1,11 +1,13 @@
+
+data_path: "/home/tomoyoshki/comic-gen/data/sample"
 data:
     # remember to modify it to your train index path
-    train_index_file: "/home/tw17/comic-gen/processed_data/sample/index_files/train.txt"
-    val_index_file: "/home/tw17/comic-gen/processed_data/sample/index_files/val.txt"
-    test_index_file: "/home/tw17/comic-gen/processed_data/sample/index_files/test.txt"
+    train_index_file: "index_files/train.txt"
+    val_index_file: "index_files/val.txt"
+    test_index_file: "index_files/test.txt"
 
 seq_len: 4
-max_seq_len: 100
+max_seq_len: 21
 text_embed_dim: 768
 
 Codigen:
@@ -28,9 +30,9 @@ Codigen:
         name: "cosine"
         warmup_prefix: True
         warmup_epochs: 0
-        train_epochs: 2500
+        train_epochs: 50
         start_epoch: 0
-        decay_epochs: 500
+        decay_epochs: 25
         decay_rate: 0.2
 
 Baseline:
@@ -46,13 +48,16 @@ Baseline:
         name: "cosine"
         warmup_prefix: True
         warmup_epochs: 0
-        train_epochs: 2500
+        train_epochs: 50
         start_epoch: 0
-        decay_epochs: 500
+        decay_epochs: 25
         decay_rate: 0.2
 
 VisionEncoder:
     pass: 1
 
 LanguageEncoder:
+    pass: 1
+
+LanguageDecoder:
     pass: 1
