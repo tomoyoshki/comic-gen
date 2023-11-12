@@ -14,7 +14,7 @@ class MultiModalDataset(Dataset):
         self.transform = transform
         
         
-        self.local_directory = "/Users/weiyangwang/546_final/sample/"
+        self.local_directory = args.dataset_config["data_path"]
     
     def __replace_path(self, path):
         path = path[path.find("sample"):]
