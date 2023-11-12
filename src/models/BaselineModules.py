@@ -233,6 +233,9 @@ class BaselineVisionSequential(BaseModel):
         panel_embeddings = self.vision_encoder(panels)
         panel_embeddings = panel_embeddings.reshape(panel_embeddings.shape[0], -1)
         panel_embeddings = self.fusion_module(panel_embeddings)
+
+
+        
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
         gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
