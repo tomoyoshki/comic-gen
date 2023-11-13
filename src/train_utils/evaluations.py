@@ -5,6 +5,8 @@ import torch.nn as nn
 from tqdm import tqdm
 import numpy as np
 
+from nltk.translate.bleu_score import sentence_bleu
+import spacy
 
 from utils.input.input_utils import process_text
 
@@ -90,3 +92,13 @@ def eval_model(args, epoch, model, val_dataloader, test_dataloader, loss_func, t
         logging.info(f"Test decoding metric1: {test_metrics[0]: .5f}, Test decoding metric2: {test_metrics[1]: .5f}")
 
     return val_metrics, val_loss
+
+
+# python -m spacy download en_core_web_lg
+def text_eva(pred, gt, metric="bleu"):
+    if metric == "bleu":
+        return sentence_bleu([pred.split()], gt.split())
+    elif metric == "spacy":
+        return pred.similarity(gt)
+    else:
+        return "not implemented"
