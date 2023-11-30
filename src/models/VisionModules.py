@@ -20,7 +20,7 @@ class VisionEncoder(nn.Module):
         merged_batch = panels.view(-1, 3, 256, 256)
         
         inputs = self.image_processor(merged_batch, return_tensors="pt")
-        outputs = self.vision_model(**inputs.to("cuda"))
+        outputs = self.vision_model(**inputs.to(self.args.device))
         
         embeddings = outputs.last_hidden_state
         cls_embeddings = embeddings[:, 0, :]
