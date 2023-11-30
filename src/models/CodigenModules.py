@@ -17,15 +17,14 @@ class Codigen(nn.Module):
         self.vis_encoder = VisionEncoder(args)
         self.lan_encoder = LanguageEncoder(args)
         # 154368
-        self.sequential_network = nn.RNN(input_size=1536, hidden_size=768, num_layers=1, batch_first=True)
+        self.sequential_network = nn.RNN(input_size=21 * 1536, hidden_size=21 * 768, num_layers=1, batch_first=True)
         
         self.fuse_network = nn.Sequential(
-            nn.Linear(768, 4000),
-            nn.ReLU(),
-            nn.Linear(4000, 1000),
+            nn.Linear(768, 1000),
             nn.ReLU(),
             nn.Linear(1000, 768),
         )
+        
         self.__init__encoder()
 
         self.decoder = None # GPT?
@@ -66,37 +65,55 @@ class Codigen(nn.Module):
         for i in range(self.config["seq_len"] - 1):
             text_token_id = texts[:, i, 0, :]
             text_attention_mask = texts[:, i, 1, :]
-            text_embedding = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, 1, tolen_len, embeedings]
+            text_embedding = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, 1, tolen_len, embeddings]
             text_seq_embeddings.append(text_embedding)
 
-        text_seq_embeddings =  torch.stack(text_seq_embeddings, dim=1) # [batch_size, seq_len - 1, token_len, embedding_dim] 
+        text_seq_embeddings = torch.stack(text_seq_embeddings, dim=1) # [batch_size, seq_len - 1, token_len, embedding_dim] 
 
         # text_token_id = texts[:, :, 0, :]
         # text_attention_mask = texts[:, :, 1, :]
         # text_embeddings = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, seq_len, token_len, embedding_dim] 
 
         # Pool on the token_len dim
-        text_embeddings = self.pool(text_seq_embeddings) # [b, seq_len - 1, emb_dim]
+        # text_embeddings = self.pool(text_seq_embeddings) # [b, seq_len - 1, emb_dim]
+        
+        # unsqueeze and expand panel embeddings
+        panel_embeddings = panel_embeddings.unsqueeze(2).expand(-1, -1, text_seq_embeddings.shape[2], -1) # output: [batch_size, seq_len, token_len, embedding_dim]
+        print(panel_embeddings.shape)
+        
         # concat panel embeddings and text embeddings
-        concat_embedding = torch.cat((panel_embeddings[:, :-1, :], text_embeddings), dim=2) # output: [batch_size, seq_len - 1, embedding_dim * 2]
+        concat_embedding = torch.cat((panel_embeddings[:, :-1, :], text_seq_embeddings), dim=3) # output: [batch_size, seq_len - 1, token_len, embedding_dim * 2]
+        print(concat_embedding.shape)
         
-        # sequential network -> [b, seq_len - 1, emb_dim]
-        sequential_embedding, _ = self.sequential_network(concat_embedding)
+        # reshape concat embedding to feed into sequential network
+        sequential_input = concat_embedding.view(concat_embedding.shape[0], concat_embedding.shape[1], -1)
+        print(sequential_input.shape)
         
-        # sequential_embedding -> [b, seq_len, emb_dim]
+        # sequential network -> [batch_size, seq_len - 1, token_len * embedding_dim]
+        sequential_embedding, _ = self.sequential_network(sequential_input)
+        print(sequential_embedding.shape)
+        
+        # sequential embedding -> [batch_size, seq_len - 1, token_len, embedding_dim]
+        sequential_embedding = sequential_embedding.view(sequential_embedding.shape[0], sequential_embedding.shape[1], text_seq_embeddings.shape[2], -1)
+        print(sequential_embedding.shape)
+        
+        # sequential_embedding -> [batch_size, seq_len, token_len, embedding_dim]
         sequential_embedding = torch.concat([sequential_embedding, panel_embeddings[:, -1, :].unsqueeze(1)], dim=1)
-
+        print(sequential_embedding.shape)
+        
         # What we want: [b, seq_len, embed_dim] -> [b, embed_dim]
         sequential_embedding = torch.mean(sequential_embedding, dim=1)
+        print(sequential_embedding.shape)
 
-        # [b, seq_len, embed_dim] -> [b, seq_len, 4000] -> [b, seq_len, embed_dim]
+        # [b, seq_len, embed_dim] -> [b, seq_len, 1000] -> [b, seq_len, embed_dim]
         fused_embeddings = self.fuse_network(sequential_embedding)
+        print(fused_embeddings.shape)
 
         # Ground Truth Embeddings
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
-        gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
-        gt_embeddings = self.gt_pool(gt_seq_embeddings)
+        gt_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
+        print(gt_embeddings.shape)
 
         return fused_embeddings, gt_embeddings
 
