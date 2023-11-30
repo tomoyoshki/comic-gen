@@ -79,41 +79,41 @@ class Codigen(nn.Module):
         
         # unsqueeze and expand panel embeddings
         panel_embeddings = panel_embeddings.unsqueeze(2).expand(-1, -1, text_seq_embeddings.shape[2], -1) # output: [batch_size, seq_len, token_len, embedding_dim]
-        print(panel_embeddings.shape)
+        # print(panel_embeddings.shape)
         
         # concat panel embeddings and text embeddings
         concat_embedding = torch.cat((panel_embeddings[:, :-1, :], text_seq_embeddings), dim=3) # output: [batch_size, seq_len - 1, token_len, embedding_dim * 2]
-        print(concat_embedding.shape)
+        # print(concat_embedding.shape)
         
         # reshape concat embedding to feed into sequential network
         sequential_input = concat_embedding.view(concat_embedding.shape[0], concat_embedding.shape[1], -1)
-        print(sequential_input.shape)
+        # print(sequential_input.shape)
         
         # sequential network -> [batch_size, seq_len - 1, token_len * embedding_dim]
         sequential_embedding, _ = self.sequential_network(sequential_input)
-        print(sequential_embedding.shape)
+        # print(sequential_embedding.shape)
         
         # sequential embedding -> [batch_size, seq_len - 1, token_len, embedding_dim]
         sequential_embedding = sequential_embedding.view(sequential_embedding.shape[0], sequential_embedding.shape[1], text_seq_embeddings.shape[2], -1)
-        print(sequential_embedding.shape)
+        # print(sequential_embedding.shape)
         
         # sequential_embedding -> [batch_size, seq_len, token_len, embedding_dim]
         sequential_embedding = torch.concat([sequential_embedding, panel_embeddings[:, -1, :].unsqueeze(1)], dim=1)
-        print(sequential_embedding.shape)
+        # print(sequential_embedding.shape)
         
         # What we want: [b, seq_len, embed_dim] -> [b, embed_dim]
         sequential_embedding = torch.mean(sequential_embedding, dim=1)
-        print(sequential_embedding.shape)
+        # print(sequential_embedding.shape)
 
         # [b, seq_len, embed_dim] -> [b, seq_len, 1000] -> [b, seq_len, embed_dim]
         fused_embeddings = self.fuse_network(sequential_embedding)
-        print(fused_embeddings.shape)
+        # print(fused_embeddings.shape)
 
         # Ground Truth Embeddings
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
         gt_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
-        print(gt_embeddings.shape)
+        # print(gt_embeddings.shape)
 
         return fused_embeddings, gt_embeddings
 
