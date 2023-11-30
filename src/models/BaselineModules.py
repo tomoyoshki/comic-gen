@@ -38,6 +38,11 @@ class BaseModel(nn.Module):
     def forward(self, panels, text):
         embeddings, gt_embedding, seq_embedding = self.forward_encoder(panels, text)
 
+        # image embeddings unsqueeze at dim 1 -> [b, 1, dim]
+        # image embeddings interleave repeat at dimension 1
+        # fuse image token embeddings and text token embeddings, concat (dim * 2), linear (dim * 2 -> dim),
+        # decode
+
         if self.args.stage in {"encode"}:
             """Encode only """
             return embeddings, gt_embedding, None, None
