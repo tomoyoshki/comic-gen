@@ -1,7 +1,9 @@
 import logging
 import torch
 import torch.nn as nn
-
+from nltk.translate.bleu_score import corpus_bleu
+from rouge import Rouge
+import math
 from tqdm import tqdm
 import numpy as np
 
@@ -17,7 +19,15 @@ def eval_metrics(args, predictions, all_labels):
         mse = mse_loss(predictions, all_labels)
         return (cos_sim, mse)
     else:
-        pass
+        # BLEU Score
+        bleu_score = corpus_bleu([[text.split()] for text in all_labels],
+                                 [decoded_text.split() for decoded_text in predictions])
+
+        # ROUGE Score
+        rouge = Rouge()
+        rouge_scores = rouge.get_scores(predictions, all_labels, avg=True)
+
+        return bleu_score, rouge_scores  # , perplexity
 
 def eval_pretrained_model(args, model, dataloader, loss_func):
     labels = []
@@ -85,8 +95,8 @@ def eval_model(args, epoch, model, val_dataloader, test_dataloader, loss_func, t
 
     elif args.stage in {"decode"}:
         logging.info(f"Val loss: {val_loss: .5f}")
-        logging.info(f"Val decoding metric1: {val_metrics[0]: .5f}, Val decoding metric2: {val_metrics[1]: .5f}")
+        logging.info(f"Val decoding metric1 (BLEU): {val_metrics[0]: .5f}, Val decoding metric2 (ROUGE): {val_metrics[1]: .5f}")
         logging.info(f"Test loss: {test_loss: .5f}")
-        logging.info(f"Test decoding metric1: {test_metrics[0]: .5f}, Test decoding metric2: {test_metrics[1]: .5f}")
+        logging.info(f"Test decoding metric1 (BLEU): {test_metrics[0]: .5f}, Test decoding metric2 (ROUGE): {test_metrics[1]: .5f}")
 
     return val_metrics, val_loss
