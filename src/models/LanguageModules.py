@@ -1,7 +1,6 @@
-
+import torch
 import torch.nn as nn
 from transformers import GPT2LMHeadModel
-
 
 class LanguageEncoder(nn.Module):
     def __init__(self, args):
@@ -38,7 +37,22 @@ class LanguageDecoder(nn.Module):
         if self.args.stage in {"decode"}:
             causal_lm_output = self.model(inputs_embeds=embeddings, labels=gt_token_id)
             loss = causal_lm_output.loss
-            return loss
+            # return loss
+            
+            logits = self.model.lm_head(embeddings)
+            predicted_token_ids = logits.argmax(-1)
+            
+            decoded_text_list = []
+            for predicted_token_id in predicted_token_ids:
+                decoded_text_list.append(self.tokenizer.decode(predicted_token_id))
+            
+            actual_text_list = []
+            for gti in gt_token_id:
+                actual_text_list.append(self.tokenizer.decode(gti))
+            # print(f"\n\n\nPredicted: {decoded_text_list}")
+            # print(f"Gt token: {gt_token_id.shape}")
+            # print(f"Actual: {actual_text_list}\n\n\n")
+            return loss, decoded_text_list
         else:
             tokens = self.model.generate(inputs_embeds=embeddings, max_length=self.max_length)
             return tokens

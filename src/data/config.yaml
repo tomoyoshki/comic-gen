@@ -1,4 +1,5 @@
 
+data_path: "/home/tw17/comic-gen/data/sample"
 data_path: "/home/tomoyoshki/comic-gen/data/sample"
 data:
     # remember to modify it to your train index path

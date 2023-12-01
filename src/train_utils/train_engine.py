@@ -47,7 +47,6 @@ def pretrain(
         for name, param in model.named_parameters():
             if "decoder" not in name:
                 param.requires_grad = False
-
     val_epochs = 5
 
     for epoch in range(classifier_config["pretrain_lr_scheduler"]["train_epochs"]):
@@ -62,6 +61,7 @@ def pretrain(
         train_loss_list = []
 
         # regularization configuration
+
         for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
             
             tokens = process_text(args, texts)
@@ -81,7 +81,11 @@ def pretrain(
 
             optimizer.step()
             train_loss_list.append(loss.item())
+            
 
+        if epoch % 5 == 0 and args.stage in {"decode"}:
+            print(f"Decoded: {decoded_texts[0]}")
+            print(f"GT: {texts[0]}")
 
         # validation and logging
         if epoch % val_epochs == 0:
