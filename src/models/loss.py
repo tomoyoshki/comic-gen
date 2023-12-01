@@ -13,8 +13,8 @@ class GeneralLoss(nn.Module):
         self.criterion = nn.CrossEntropyLoss(reduction="sum")
 
     def forward_similarity(self, z_i, z_j):
-        z_i = z_i.view(z_i.shape[0], -1)
-        z_j = z_j.view(z_j.shape[0], -1)
+        # z_i = z_i.view(z_i.shape[0], -1)
+        # z_j = z_j.view(z_j.shape[0], -1)
         
         batch_size = z_i.shape[0]
         N = 2 * batch_size

@@ -1,6 +1,5 @@
 
-data_path: "/home/tw17/comic-gen/data/sample"
-data_path: "/home/tomoyoshki/comic-gen/data/sample"
+data_path: "/Users/weiyangwang/546_final/sample"
 data:
     # remember to modify it to your train index path
     train_index_file: "index_files/train.txt"
@@ -49,7 +48,6 @@ Baseline:
         name: "cosine"
         warmup_prefix: True
         warmup_epochs: 0
-        train_epochs: 100
         train_epochs: 50
         start_epoch: 0
         decay_epochs: 25

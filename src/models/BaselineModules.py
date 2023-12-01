@@ -32,18 +32,18 @@ class BaseModel(nn.Module):
         pass
 
     def forward_decoder(self, embeddings, gt_token_id=None):
-        token, text = self.decoder(embeddings, gt_token_id)
-        return token, text
+        loss, decoded_text_list = self.decoder(embeddings, gt_token_id)
+        return loss, decoded_text_list
     
-    def forward(self, panels, text):
-        embeddings, gt_embedding, seq_embedding = self.forward_encoder(panels, text)
+    def forward(self, panels=None, text=None, embeddings=None):
+        """Encode only """
+        embeddings, gt_embedding, gt_token_embeddings, sequential_token_embeddings = self.forward_encoder(panels, text)
+        loss = None
+        decoded_text_list = None
 
-        if self.args.stage in {"encode"}:
-            """Encode only """
-            return embeddings, gt_embedding, None, None
-
-        decoded_tokens, decoded_texts = self.forward_decoder(seq_embedding, text[:, -1, 0, :])
-        return embeddings, gt_embedding, decoded_tokens, decoded_texts
+        if self.args.stage in {"decode"}:
+            loss, decoded_text_list = self.forward_decoder(sequential_token_embeddings, text[:, -1, 0, :])
+        return embeddings, gt_embedding, loss, decoded_text_list
 
 
 class BaselineLanguageNonSequential(BaseModel):
@@ -62,8 +62,25 @@ class BaselineLanguageNonSequential(BaseModel):
             fused_dim, self.args.dataset_config["text_embed_dim"]
         )
         
-
     def pool(self, embedding):
+        """Pool over token length
+        Codigen Pool Input: [b, seq_len, token_len, embedding]
+        Output: [b, seq_len, embedding]
+        """
+        # Reshape and transpose: [batch_size * seq_len, embedding_dim, token_len]
+        b, seq_len, token_len, embedding_dim = embedding.shape
+        embedding_reshaped = torch.permute(embedding, (0, 1, 3, 2))
+        embedding_reshaped = embedding_reshaped.reshape(b * seq_len, embedding_dim, token_len)
+        # embedding_reshaped = embedding.reshape(b * seq_len, embedding_dim, token_len)
+
+        # Apply max pooling over the token length dimension
+        max_pooled = F.max_pool1d(embedding_reshaped, kernel_size=token_len)
+        max_pooled = max_pooled.squeeze(-1)
+        # Reshape back to [batch_size, seq_len, embedding_dim]
+        max_pooled = max_pooled.reshape(b, seq_len, embedding_dim)
+        return max_pooled
+    
+    def gt_pool(self, embedding):
         embedding_transposed = embedding.transpose(1, 2)
         # Apply max pooling over the sequence length dimension
         max_pooled = F.max_pool1d(embedding_transposed, kernel_size=embedding_transposed.size(-1))
@@ -73,26 +90,25 @@ class BaselineLanguageNonSequential(BaseModel):
     
     def forward_encoder(self, panels, texts):
         text_seq_embeddings = []
-
         # For each panel_text in the sequence until the second last one
         for i in range(self.dataset_config["seq_len"] - 1):
             text_token_id = texts[:, i, 0, :]
             text_attention_mask = texts[:, i, 1, :]
-            text_embedding = self.language_encoder(text_token_id, text_attention_mask)
-
+            text_embedding = self.language_encoder(text_token_id, text_attention_mask) # [batch_size, 1, tolen_len, embeddings]
             text_seq_embeddings.append(text_embedding)
-        
-        text_seq_embeddings = torch.concatenate(text_seq_embeddings, dim=-1)
-        text_seq_embeddings = self.fusion_module(text_seq_embeddings)
 
+        text_seq_embeddings = torch.stack(text_seq_embeddings, dim=1) # [batch_size, seq_len - 1, token_len, embedding_dim]
+        pooled_text_embeddings = self.pool(text_seq_embeddings)
+        pooled_text_embeddings = torch.mean(pooled_text_embeddings, dim=1)
+        
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
-        gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
+        gt_token_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
+        gt_embeddings = self.gt_pool(gt_token_embeddings)
         
-        text_embeddings = self.pool(text_seq_embeddings)
-        gt_embeddings = self.pool(gt_seq_embeddings)
-
-        return text_embeddings, gt_embeddings, text_seq_embeddings
+        # print(gt_embeddings.shape)
+        
+        return pooled_text_embeddings, gt_embeddings, gt_token_embeddings, text_seq_embeddings
     
 
 class BaselineVisionNonSequential(BaseModel):
