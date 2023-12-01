@@ -61,9 +61,7 @@ def pretrain(
         train_loss_list = []
 
         # regularization configuration
-        
-        to_print_decode = None
-        to_print_gt = None
+
         for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
             
             tokens = process_text(args, texts)
@@ -84,13 +82,10 @@ def pretrain(
             optimizer.step()
             train_loss_list.append(loss.item())
             
-            to_print_gt = texts[0]
-            to_print_decode = decoded_texts[0]
-            
 
-        if epoch % 5 == 0:
-            print(f"Decoded: {to_print_decode}")
-            print(f"GT: {to_print_gt}")
+        if epoch % 5 == 0 and args.stage in {"decode"}:
+            print(f"Decoded: {decoded_texts[0]}")
+            print(f"GT: {texts[0]}")
 
         # validation and logging
         if epoch % val_epochs == 0:

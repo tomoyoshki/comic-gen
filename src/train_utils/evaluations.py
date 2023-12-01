@@ -26,13 +26,10 @@ def eval_decoder_metrics(args, gt_texts, decoded_texts, metric="bleu"):
         pred = [p.split() for p in pred]
         gt = gt_texts[i]
         gt = [g.split() for g in gt]
-        # print(len(pred))
-        # print(len(gt))
-        # print(pred)
-        # print(gt)
         if metric == "bleu":
             for j in range(len(pred)):
-                loss += sentence_bleu(pred[j], gt[j])
+                bleu = sentence_bleu(pred[j], gt[j])
+                loss += bleu
     return loss
         # elif metric == "spacy":
             # return pred.similarity(gt)
