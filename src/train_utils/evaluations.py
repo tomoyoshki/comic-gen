@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from tqdm import tqdm
 import numpy as np
+from nltk.translate.bleu_score import sentence_bleu
 
 
 from utils.input.input_utils import process_text
@@ -16,8 +17,27 @@ def eval_metrics(args, predictions, all_labels):
         cos_sim = sim_loss(predictions, all_labels, target)
         mse = mse_loss(predictions, all_labels)
         return (cos_sim, mse)
-    else:
-        pass
+
+def eval_decoder_metrics(args, gt_texts, decoded_texts, metric="bleu"):
+    # def text_eva(pred, gt, metric="bleu"):
+    loss = 0
+    for i in range(len(gt_texts)):
+        pred = decoded_texts[i]
+        pred = [p.split() for p in pred]
+        gt = gt_texts[i]
+        gt = [g.split() for g in gt]
+        # print(len(pred))
+        # print(len(gt))
+        # print(pred)
+        # print(gt)
+        if metric == "bleu":
+            for j in range(len(pred)):
+                loss += sentence_bleu(pred[j], gt[j])
+    return loss
+        # elif metric == "spacy":
+            # return pred.similarity(gt)
+        # else:
+            # return "not implemented"
 
 def eval_pretrained_model(args, model, dataloader, loss_func):
     labels = []
@@ -49,7 +69,7 @@ def eval_pretrained_model(args, model, dataloader, loss_func):
             
             all_predicted_embeddings.append(embeddings)
             all_gt_embeddings.append(gt_embeddings)
-            if args.stage in {"generate"}:
+            if args.stage in {"decode", "generate"}:
                 all_gt_texts.append(texts[:, -1])
                 all_decoded_texts.append(decoded_texts)
 
@@ -58,7 +78,10 @@ def eval_pretrained_model(args, model, dataloader, loss_func):
         
     # compute metrics
     mean_loss = np.mean(loss_list)
-    metrics = eval_metrics(args, all_predictions, all_gt)
+    if args.stage in {"encode"}:
+        metrics = eval_metrics(args, all_predictions, all_gt)
+    else:
+        metrics = eval_decoder_metrics(args, all_gt_texts, all_decoded_texts)
 
     return mean_loss, metrics
 
@@ -85,8 +108,8 @@ def eval_model(args, epoch, model, val_dataloader, test_dataloader, loss_func, t
 
     elif args.stage in {"decode"}:
         logging.info(f"Val loss: {val_loss: .5f}")
-        logging.info(f"Val decoding metric1: {val_metrics[0]: .5f}, Val decoding metric2: {val_metrics[1]: .5f}")
+        logging.info(f"Val BLEU Score: {val_metrics: .5f}, Val decoding metric2: {0: .5f}")
         logging.info(f"Test loss: {test_loss: .5f}")
-        logging.info(f"Test decoding metric1: {test_metrics[0]: .5f}, Test decoding metric2: {test_metrics[1]: .5f}")
+        logging.info(f"Test BLEU Score: {test_metrics: .5f}, Test decoding metric2: {0: .5f}")
 
     return val_metrics, val_loss
