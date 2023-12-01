@@ -49,6 +49,7 @@ Baseline:
         name: "cosine"
         warmup_prefix: True
         warmup_epochs: 0
+        train_epochs: 100
         train_epochs: 50
         start_epoch: 0
         decay_epochs: 25
