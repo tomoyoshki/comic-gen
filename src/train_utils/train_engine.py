@@ -42,12 +42,6 @@ def pretrain(
     best_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_{args.stage}_best.pt")
     latest_weight = os.path.join(args.weight_folder, f"model_weights/{args.framework}_{args.stage}_latest.pt")
     
-    if args.stage in {"decode"}:
-        model = load_model_weight(args, model)
-        for name, param in model.named_parameters():
-            if "decoder" not in name:
-                param.requires_grad = False
-
     val_epochs = 5
 
     for epoch in range(classifier_config["pretrain_lr_scheduler"]["train_epochs"]):
@@ -62,6 +56,7 @@ def pretrain(
         train_loss_list = []
 
         # regularization configuration
+
         for i, (panels, texts) in tqdm(enumerate(train_dataloader), total=num_batches):
             
             tokens = process_text(args, texts)
@@ -69,19 +64,26 @@ def pretrain(
             tokens = tokens.to(args.device)
             embeddings, gt_embeddings, decoded_tokens, decoded_texts = model(panels, tokens)
             
-            if args.stage in {"encode"}:
-                loss = loss_func(embeddings, gt_embeddings)
-            elif args.stage in {"decode"}:
-                loss = decoded_tokens
-            else:
-                raise Exception("Do not run generate stage in pretrain mode")
+            # if args.stage in {"encode"}:
+            encode_loss = loss_func(embeddings, gt_embeddings)
+            # elif args.stage in {"decode"}:
+            decode_loss = decoded_tokens
+            # else:
+                # raise Exception("Do not run generate stage in pretrain mode")
+                
+            loss = encode_loss + decode_loss
+
             # back propagation
             optimizer.zero_grad()
             loss.backward()
 
             optimizer.step()
             train_loss_list.append(loss.item())
+            
 
+        if epoch % 5 == 0:
+            print(f"Decoded: {decoded_texts[0]}")
+            print(f"GT: {texts[0]}")
 
         # validation and logging
         if epoch % val_epochs == 0:

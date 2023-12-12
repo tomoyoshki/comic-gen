@@ -24,7 +24,7 @@ def select_model(args):
     args.tokenizer = tokenizer
     
     if args.framework == "Codigen":
-        model = Codigen(args) #, tokenizer
+        model = Codigen(args, tokenizer) #, tokenizer
     elif args.framework == "Baseline":
         if args.baseline == "LanguageNonSequential":
             model = BaselineLanguageNonSequential(args, tokenizer)

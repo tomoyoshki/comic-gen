@@ -1,5 +1,6 @@
 
-data_path: "/Users/weiyangwang/546_final/sample"
+# data_path: "/home/tw17/comic-gen/data/sample"
+data_path: "/Users/tomoyoshikimura/Documents/fa23/cs546/comic-gen/data/sample"
 data:
     # remember to modify it to your train index path
     train_index_file: "index_files/train.txt"

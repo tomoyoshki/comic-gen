@@ -9,9 +9,9 @@ class Decoder(nn.Module):
         self.tokenizer = tokenizer
 
     def forward(self, embedding, gt_token_id=None):
-        if self.args.stage in {"decode"}:
-            loss = self.backbone(embedding, gt_token_id)
-            return loss, None
+        if self.args.stage in {"encode", "decode"}:
+            loss, decoded_text_list = self.backbone(embedding, gt_token_id)
+            return loss, decoded_text_list
 
         tokens = self.backbone(embedding, gt_token_id)
         if self.args.stage in {"generate"}:

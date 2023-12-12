@@ -3,11 +3,12 @@ import torch.nn as nn
 
 from models.VisionModules import VisionEncoder
 from models.LanguageModules import LanguageEncoder
+from models.DecoderModules import Decoder
 import torch.nn.functional as F
 
 class Codigen(nn.Module):
     
-    def __init__(self, args):
+    def __init__(self, args, tokenizer):
         super(Codigen, self).__init__()
         self.args = args
         self.config = args.dataset_config
@@ -20,15 +21,16 @@ class Codigen(nn.Module):
         self.sequential_network = nn.RNN(input_size=1536, hidden_size=768, num_layers=1, batch_first=True)
         
         self.fuse_network = nn.Sequential(
-            nn.Linear(768, 4000),
-            nn.ReLU(),
-            nn.Linear(4000, 1000),
+            nn.Linear(768, 1000),
             nn.ReLU(),
             nn.Linear(1000, 768),
         )
+        
         self.__init__encoder()
 
-        self.decoder = None # GPT?
+        # self.decoder = None # GPT?
+        self.tokenizer = tokenizer
+        self.decoder = Decoder(self.args, self.tokenizer)
 
     # THIS IS DIRECTLY COPIED FROM BaselineModules.py
     def __init__encoder(self):
@@ -66,54 +68,85 @@ class Codigen(nn.Module):
         for i in range(self.config["seq_len"] - 1):
             text_token_id = texts[:, i, 0, :]
             text_attention_mask = texts[:, i, 1, :]
-            text_embedding = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, 1, tolen_len, embeedings]
+            text_embedding = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, 1, tolen_len, embeddings]
             text_seq_embeddings.append(text_embedding)
 
-        text_seq_embeddings =  torch.stack(text_seq_embeddings, dim=1) # [batch_size, seq_len - 1, token_len, embedding_dim] 
+        text_seq_embeddings = torch.stack(text_seq_embeddings, dim=1) # [batch_size, seq_len - 1, token_len, embedding_dim]
+        pooled_text_embeddings = self.pool(text_seq_embeddings)
 
         # text_token_id = texts[:, :, 0, :]
         # text_attention_mask = texts[:, :, 1, :]
         # text_embeddings = self.lan_encoder(text_token_id, text_attention_mask) # [batch_size, seq_len, token_len, embedding_dim] 
 
         # Pool on the token_len dim
-        text_embeddings = self.pool(text_seq_embeddings) # [b, seq_len - 1, emb_dim]
+        # text_embeddings = self.pool(text_seq_embeddings) # [b, seq_len - 1, emb_dim]
+        
+        # unsqueeze and expand panel embeddings
+        panel_token_embeddings = panel_embeddings.unsqueeze(2).expand(-1, -1, text_seq_embeddings.shape[2], -1) # output: [batch_size, seq_len, token_len, embedding_dim]
+        # print(panel_embeddings.shape)
+        
         # concat panel embeddings and text embeddings
-        concat_embedding = torch.cat((panel_embeddings[:, :-1, :], text_embeddings), dim=2) # output: [batch_size, seq_len - 1, embedding_dim * 2]
+        concat_embedding = torch.cat((panel_embeddings[:, :-1], pooled_text_embeddings), dim=-1) # output: [batch_size, seq_len - 1, token_len, embedding_dim * 2]
+        concat_token_embedding = torch.cat((panel_token_embeddings[:, :-1, :], text_seq_embeddings), dim=-1)
+        # print(concat_embedding.shape)
         
-        # sequential network -> [b, seq_len - 1, emb_dim]
-        sequential_embedding, _ = self.sequential_network(concat_embedding)
+        # reshape concat embedding to feed into sequential network
+        sequential_input = concat_embedding.view(concat_embedding.shape[0], concat_embedding.shape[1], -1)
+        # print(sequential_input.shape)
         
-        # sequential_embedding -> [b, seq_len, emb_dim]
+        # sequential network -> [batch_size, seq_len - 1, token_len * embedding_dim]
+        sequential_embedding, _ = self.sequential_network(sequential_input)
+        
+        b, s, t, dim = concat_token_embedding.shape
+        concat_token_embedding = concat_token_embedding.reshape(b, s * t, dim)
+        sequential_token_embedding, _ = self.sequential_network(concat_token_embedding)
+        sequential_token_embedding = sequential_token_embedding.reshape(b, s, t, dim // 2)
+        # print(sequential_embedding.shape)
+        
+        # sequential embedding -> [batch_size, seq_len - 1, token_len, embedding_dim]
+        # sequential_embedding = sequential_embedding.view(sequential_embedding.shape[0], sequential_embedding.shape[1], text_seq_embeddings.shape[2], -1)
+        # print(sequential_embedding.shape)
+        
+        # sequential_embedding -> [batch_size, seq_len, token_len, embedding_dim]
         sequential_embedding = torch.concat([sequential_embedding, panel_embeddings[:, -1, :].unsqueeze(1)], dim=1)
-
+        sequential_token_embedding = torch.concat([sequential_token_embedding, panel_token_embeddings[:, -1, :].unsqueeze(1)], dim=1)
+        # print(sequential_embedding.shape)
+        
         # What we want: [b, seq_len, embed_dim] -> [b, embed_dim]
         sequential_embedding = torch.mean(sequential_embedding, dim=1)
+        sequential_token_embedding = torch.mean(sequential_token_embedding, dim=1)
+        # print(sequential_embedding.shape)
 
-        # [b, seq_len, embed_dim] -> [b, seq_len, 4000] -> [b, seq_len, embed_dim]
+        # [b, seq_len, embed_dim] -> [b, seq_len, 1000] -> [b, seq_len, embed_dim]
         fused_embeddings = self.fuse_network(sequential_embedding)
+        fused_token_embeddings = self.fuse_network(sequential_token_embedding)
+        # print(fused_embeddings.shape)
 
         # Ground Truth Embeddings
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
-        gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
-        gt_embeddings = self.gt_pool(gt_seq_embeddings)
+        gt_token_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
+        gt_embeddings = self.gt_pool(gt_token_embeddings)
+        # print(gt_embeddings.shape)
 
-        return fused_embeddings, gt_embeddings
+        return fused_embeddings, gt_embeddings, gt_token_embeddings, sequential_token_embedding
 
 
     # TODO: TO BE IMPLEMENTED
-    def forward_decoder(self, embeddings):
-        decoded_text = self.decoder(embeddings)
-        return decoded_text
+    def forward_decoder(self, embeddings, gt_token_id=None):
+        loss, decoded_text_list = self.decoder(embeddings, gt_token_id)
+        return loss, decoded_text_list
     
 
     def forward(self, panels=None, text=None, embeddings=None):
-        if embeddings is None:
-            """Encode only """
-            embeddings, gt_embedding = self.forward_encoder(panels, text)
-            return embeddings, gt_embedding, None, None
-        else:
-            return self.forward_decoder(embeddings)
+        """Encode only """
+        embeddings, gt_embedding, gt_token_embeddings, sequential_token_embeddings = self.forward_encoder(panels, text)
+        loss = None
+        decoded_text_list = None
+
+        # if self.args.stage in {"decode"}:
+        loss, decoded_text_list = self.forward_decoder(sequential_token_embeddings, text[:, -1, 0, :])
+        return embeddings, gt_embedding, loss, decoded_text_list
 
 
     def pool(self, embedding):

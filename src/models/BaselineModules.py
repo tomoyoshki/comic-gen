@@ -43,10 +43,6 @@ class BaseModel(nn.Module):
         # fuse image token embeddings and text token embeddings, concat (dim * 2), linear (dim * 2 -> dim),
         # decode
 
-        if self.args.stage in {"encode"}:
-            """Encode only """
-            return embeddings, gt_embedding, None, None
-
         decoded_tokens, decoded_texts = self.forward_decoder(seq_embedding, text[:, -1, 0, :])
         return embeddings, gt_embedding, decoded_tokens, decoded_texts
 
