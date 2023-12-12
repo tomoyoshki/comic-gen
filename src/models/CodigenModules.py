@@ -144,8 +144,8 @@ class Codigen(nn.Module):
         loss = None
         decoded_text_list = None
 
-        if self.args.stage in {"decode"}:
-            loss, decoded_text_list = self.forward_decoder(sequential_token_embeddings, text[:, -1, 0, :])
+        # if self.args.stage in {"decode"}:
+        loss, decoded_text_list = self.forward_decoder(sequential_token_embeddings, text[:, -1, 0, :])
         return embeddings, gt_embedding, loss, decoded_text_list
 
 

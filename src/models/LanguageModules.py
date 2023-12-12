@@ -34,7 +34,7 @@ class LanguageDecoder(nn.Module):
 
     def forward(self, embeddings, gt_token_id=None):
         # return self.model(inputs_embeds=embeddings, max_length=self.max_length)
-        if self.args.stage in {"decode"}:
+        if self.args.stage in {"encode", "decode"}:
             causal_lm_output = self.model(inputs_embeds=embeddings, labels=gt_token_id)
             loss = causal_lm_output.loss
             # return loss
