@@ -38,9 +38,10 @@ class BaseModel(nn.Module):
     def forward(self, panels, text):
         embeddings, gt_embedding, seq_embedding = self.forward_encoder(panels, text)
 
-        if self.args.stage in {"encode"}:
-            """Encode only """
-            return embeddings, gt_embedding, None, None
+        # image embeddings unsqueeze at dim 1 -> [b, 1, dim]
+        # image embeddings interleave repeat at dimension 1
+        # fuse image token embeddings and text token embeddings, concat (dim * 2), linear (dim * 2 -> dim),
+        # decode
 
         decoded_tokens, decoded_texts = self.forward_decoder(seq_embedding, text[:, -1, 0, :])
         return embeddings, gt_embedding, decoded_tokens, decoded_texts
@@ -215,6 +216,7 @@ class BaselineVisionSequential(BaseModel):
         self.ground_truth_encoder = LanguageEncoder(self.args)
         for param in self.ground_truth_encoder.parameters():
             param.requires_grad = False  # not update by gradient
+        self.sequential_network = nn.RNN(input_size=self.args.dataset_config["text_embed_dim"], hidden_size=self.args.dataset_config["text_embed_dim"], num_layers=1, batch_first=True)
             
         fused_dim = (self.args.dataset_config["seq_len"]) * self.args.dataset_config["text_embed_dim"]
         self.fusion_module = nn.Linear(
@@ -233,11 +235,13 @@ class BaselineVisionSequential(BaseModel):
         panel_embeddings = self.vision_encoder(panels)
         panel_embeddings = panel_embeddings.reshape(panel_embeddings.shape[0], -1)
         panel_embeddings = self.fusion_module(panel_embeddings)
+        seq_panel_embeddings, _ = self.sequential_network(panel_embeddings)
+
         ground_truth_id = texts[:, -1, 0, :]
         ground_truth_mask = texts[:, -1, 1, :]
         gt_seq_embeddings = self.ground_truth_encoder(ground_truth_id, ground_truth_mask)
         gt_embeddings = self.pool(gt_seq_embeddings)
-        return panel_embeddings, gt_embeddings, None
+        return seq_panel_embeddings, gt_embeddings, None
 
       
 class BaselineLanguageSequential(BaseModel):
