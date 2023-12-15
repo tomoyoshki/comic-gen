@@ -84,6 +84,12 @@ class Codigen(nn.Module):
         # unsqueeze and expand panel embeddings
         panel_token_embeddings = panel_embeddings.unsqueeze(2).expand(-1, -1, text_seq_embeddings.shape[2], -1) # output: [batch_size, seq_len, token_len, embedding_dim]
         # print(panel_embeddings.shape)
+
+        # normalize the embeddings
+        panel_token_embeddings = F.normalize(panel_token_embeddings)
+        text_seq_embeddings = F.normalize(text_seq_embeddings)
+        panel_embeddings = F.normalize(panel_embeddings)
+        pooled_text_embeddings = F.normalize(pooled_text_embeddings)
         
         # concat panel embeddings and text embeddings
         concat_embedding = torch.cat((panel_embeddings[:, :-1], pooled_text_embeddings), dim=-1) # output: [batch_size, seq_len - 1, token_len, embedding_dim * 2]
