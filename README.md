@@ -40,6 +40,10 @@ python3 train.py -h
 
 - Codigen
 - LanguageNonSequential (baseline)
+- VisionNonSequential (baseline)
+- LangyuageSequential (baseline)
+- VisionSequential (baseline)
+- LanguageVisionNonSequential (baseline)
 
 ### Train Encoder
 
