@@ -40,10 +40,6 @@ python3 train.py -h
 
 - Codigen
 - LanguageNonSequential (baseline)
-- VisionNonSequential (baseline)
-- LangyuageSequential (baseline)
-- VisionSequential (baseline)
-- LanguageVisionNonSequential (baseline)
 
 ### Train Encoder
 
@@ -73,3 +69,13 @@ python3 train.py -gpu=[GPU] -framework=Codigen -stage=decode  -model_weight[PATH
 python3 train.py -gpu=[GPU] -framework=Baseline -baseline=[BASELINE TO RUN] -stage=decode -model_weight[PATH TO MODEL ENCODER WEIGHT]
 ```
 
+
+### Git Contribution Logs
+
+To view the contribution by lines, please run
+
+```bash
+bash git_log.bash
+```
+
+and then check `logs/`
